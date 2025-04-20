@@ -1,12 +1,19 @@
-
 import { useState } from "react";
 import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { ThemeToggle } from "./ThemeToggle";
 import { Menu, X } from "lucide-react";
+import { LoginForm } from "./LoginForm";
+import {
+  Dialog,
+  DialogContent,
+  DialogTrigger,
+} from "@/components/ui/dialog";
+import { useAuth } from "@/context/AuthContext";
 
 export function Header() {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const { isAuthenticated, logout } = useAuth();
 
   return (
     <header className="sticky top-0 z-50 w-full border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
@@ -26,13 +33,31 @@ export function Header() {
             <Link to="/purchased" className="transition-colors hover:text-primary">
               Purchased Projects
             </Link>
+            {isAuthenticated && (
+              <Link to="/admin" className="transition-colors hover:text-primary">
+                Admin Dashboard
+              </Link>
+            )}
           </nav>
           
           <div className="flex items-center gap-2">
             <ThemeToggle />
-            <Button variant="default" size="sm">
-              Sign In
-            </Button>
+            {isAuthenticated ? (
+              <Button variant="default" size="sm" onClick={logout}>
+                Logout
+              </Button>
+            ) : (
+              <Dialog>
+                <DialogTrigger asChild>
+                  <Button variant="default" size="sm">
+                    Sign In
+                  </Button>
+                </DialogTrigger>
+                <DialogContent>
+                  <LoginForm />
+                </DialogContent>
+              </Dialog>
+            )}
           </div>
         </div>
         
