@@ -9,8 +9,8 @@ import { ProjectCard } from "./ProjectCard";
 
 export function ProjectFilter() {
   const [filteredProjects, setFilteredProjects] = useState<Project[]>(projects);
-  const [techStack, setTechStack] = useState<string>("");
-  const [domain, setDomain] = useState<string>("");
+  const [techStack, setTechStack] = useState<string>("all");
+  const [domain, setDomain] = useState<string>("all");
   const [priceRange, setPriceRange] = useState<number[]>([0, 2000]);
   
   const techStacks = getTechStacks();
@@ -22,13 +22,13 @@ export function ProjectFilter() {
   useEffect(() => {
     let result = [...projects];
     
-    if (techStack) {
+    if (techStack && techStack !== "all") {
       result = result.filter(project => 
         project.techStack.includes(techStack)
       );
     }
     
-    if (domain) {
+    if (domain && domain !== "all") {
       result = result.filter(project => 
         project.domain === domain
       );
@@ -42,8 +42,8 @@ export function ProjectFilter() {
   }, [techStack, domain, priceRange]);
   
   const resetFilters = () => {
-    setTechStack("");
-    setDomain("");
+    setTechStack("all");
+    setDomain("all");
     setPriceRange([minPrice, maxPrice]);
   };
 
@@ -60,7 +60,7 @@ export function ProjectFilter() {
                 <SelectValue placeholder="All Technologies" />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="">All Technologies</SelectItem>
+                <SelectItem value="all">All Technologies</SelectItem>
                 {techStacks.map(tech => (
                   <SelectItem key={tech} value={tech}>{tech}</SelectItem>
                 ))}
@@ -75,7 +75,7 @@ export function ProjectFilter() {
                 <SelectValue placeholder="All Domains" />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="">All Domains</SelectItem>
+                <SelectItem value="all">All Domains</SelectItem>
                 {domains.map(domain => (
                   <SelectItem key={domain} value={domain}>{domain}</SelectItem>
                 ))}
