@@ -1,4 +1,3 @@
-
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
@@ -78,17 +77,15 @@
 }
 
 .discount-badge {
-  @apply bg-gradient-to-r from-yellow-400 to-amber-500 text-black font-bold;
-  animation: pulse 2s infinite;
+  @apply bg-gradient-to-r from-yellow-400 via-orange-500 to-red-500 text-white font-bold shadow-lg;
+  background-size: 200% auto;
+  animation: gradient 3s linear infinite;
 }
 
-@keyframes pulse {
-  0%, 100% {
-    opacity: 1;
-  }
-  50% {
-    opacity: 0.8;
-  }
+@keyframes gradient {
+  0% { background-position: 0% center; }
+  50% { background-position: 100% center; }
+  100% { background-position: 0% center; }
 }
 
 .project-card {
