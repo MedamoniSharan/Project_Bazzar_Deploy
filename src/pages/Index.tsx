@@ -1,4 +1,5 @@
 
+import { useState } from "react";
 import { Header } from "@/components/Header";
 import { TopProjects } from "@/components/TopProjects";
 import { ProjectFilter } from "@/components/ProjectFilter";
@@ -7,6 +8,12 @@ import { ContactForm } from "@/components/ContactForm";
 import { Footer } from "@/components/Footer";
 
 const Index = () => {
+  const [filters, setFilters] = useState({
+    priceRange: { min: 0, max: 1000 },
+    techStack: [],
+    domain: "all"
+  });
+
   return (
     <div className="flex flex-col min-h-screen">
       <Header />
@@ -21,7 +28,7 @@ const Index = () => {
               <p className="text-xl text-muted-foreground mb-8">
                 High-quality, professionally built projects ready to deploy. Save time and accelerate your development.
               </p>
-              <div className="discount-badge inline-block px-4 py-2 rounded-md text-lg font-semibold mb-8">
+              <div className="discount-badge inline-block px-4 py-2 rounded-md text-lg font-semibold mb-8 bg-primary text-primary-foreground animate-pulse">
                 STUDENT OFFER: 10% DISCOUNT with code 444555
               </div>
             </div>
@@ -29,7 +36,9 @@ const Index = () => {
         </section>
 
         <TopProjects />
-        <ProjectFilter />
+        <div className="container">
+          <ProjectFilter onFilterChange={setFilters} />
+        </div>
         <TechStackSlider />
         <ContactForm />
       </main>
