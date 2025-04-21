@@ -10,7 +10,6 @@ import {
   DropdownMenuContent,
   DropdownMenuTrigger
 } from "@/components/ui/dropdown-menu";
-import { CheckIcon } from "lucide-react";
 
 interface ProjectFilterProps {
   onFilterChange?: (filters: any) => void;
@@ -50,6 +49,12 @@ export function ProjectFilter({ onFilterChange }: ProjectFilterProps) {
     setDomain(value);
     if (onFilterChange) {
       onFilterChange({ priceRange, techStack, domain: value });
+    }
+  };
+
+  const applyFilters = () => {
+    if (onFilterChange) {
+      onFilterChange({ priceRange, techStack, domain });
     }
   };
 
@@ -122,6 +127,10 @@ export function ProjectFilter({ onFilterChange }: ProjectFilterProps) {
               </SelectContent>
             </Select>
           </div>
+        </div>
+        
+        <div className="mt-6">
+          <Button onClick={applyFilters} className="w-full">Apply Filters</Button>
         </div>
       </CardContent>
     </Card>
