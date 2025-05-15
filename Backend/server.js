@@ -12,6 +12,7 @@ const app = express();
 const PORT = process.env.PORT || 3000;
 
 app.use(cors());
+app.use(express.json());
 
 // We don’t need express.json() or urlencoded() for multipart/form-data
 // Only keep them if you also support application/json requests elsewhere
