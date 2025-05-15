@@ -5,6 +5,7 @@ import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { Textarea } from "@/components/ui/textarea";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import {
   Card,
@@ -30,7 +31,11 @@ import {
   Package, 
   FileText,
   ShoppingCart,
-  BarChart
+  BarChart,
+  Image,
+  Video,
+  DollarSign,
+  Percent
 } from "lucide-react";
 
 export default function AdminDashboard() {
@@ -45,6 +50,7 @@ export default function AdminDashboard() {
     techStack: "",
     domain: "",
     images: ["placeholder.svg"],
+    videos: [],
     featured: false,
     soldCount: 0,
   });
@@ -56,6 +62,8 @@ export default function AdminDashboard() {
   });
   const [projects, setProjects] = useState<Project[]>([]);
   const [loading, setLoading] = useState(true);
+  const [imageUrls, setImageUrls] = useState<string>("");
+  const [videoUrls, setVideoUrls] = useState<string>("");
 
   useEffect(() => {
     // Simulate fetching stats and projects from API
@@ -89,21 +97,42 @@ export default function AdminDashboard() {
   }, [toast]);
 
   if (!isAuthenticated) {
-    return <Navigate to="/" />;
+    return <Navigate to="/login" />;
   }
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    
+    // Process image URLs from comma-separated string to array
+    const imagesArray = imageUrls
+      .split(',')
+      .map(url => url.trim())
+      .filter(url => url.length > 0);
+    
+    // Process video URLs from comma-separated string to array
+    const videosArray = videoUrls
+      .split(',')
+      .map(url => url.trim())
+      .filter(url => url.length > 0);
+    
+    // Use default placeholder if no images provided
+    const finalImages = imagesArray.length > 0 ? imagesArray : ["placeholder.svg"];
+    
     try {
       await ProjectModel.create({
         ...newProject,
         id: Date.now(),
         techStack: newProject.techStack.split(",").map(tech => tech.trim()),
+        images: finalImages,
+        videos: videosArray,
       });
+      
       toast({
         title: "Success",
         description: "Project added successfully",
       });
+      
+      // Reset form
       setNewProject({
         title: "",
         description: "",
@@ -113,9 +142,12 @@ export default function AdminDashboard() {
         techStack: "",
         domain: "",
         images: ["placeholder.svg"],
+        videos: [],
         featured: false,
         soldCount: 0,
       });
+      setImageUrls("");
+      setVideoUrls("");
       
       // Update projects list
       import("@/data/projects").then(({ projects }) => {
@@ -272,17 +304,21 @@ export default function AdminDashboard() {
 
                 <div className="space-y-2">
                   <Label htmlFor="description">Full Description</Label>
-                  <Input
+                  <Textarea
                     id="description"
                     value={newProject.description}
                     onChange={(e) => setNewProject(prev => ({ ...prev, description: e.target.value }))}
+                    rows={5}
                     required
                   />
                 </div>
 
                 <div className="grid grid-cols-2 gap-4">
                   <div className="space-y-2">
-                    <Label htmlFor="price">Price</Label>
+                    <Label htmlFor="price" className="flex items-center">
+                      <DollarSign className="h-4 w-4 mr-1" />
+                      Price
+                    </Label>
                     <Input
                       id="price"
                       type="number"
@@ -294,7 +330,10 @@ export default function AdminDashboard() {
                   </div>
 
                   <div className="space-y-2">
-                    <Label htmlFor="discount">Discount %</Label>
+                    <Label htmlFor="discount" className="flex items-center">
+                      <Percent className="h-4 w-4 mr-1" />
+                      Discount %
+                    </Label>
                     <Input
                       id="discount"
                       type="number"
@@ -325,6 +364,49 @@ export default function AdminDashboard() {
                     onChange={(e) => setNewProject(prev => ({ ...prev, domain: e.target.value }))}
                     required
                   />
+                </div>
+
+                <div className="space-y-2">
+                  <Label htmlFor="images" className="flex items-center">
+                    <Image className="h-4 w-4 mr-1" />
+                    Images (comma-separated URLs)
+                  </Label>
+                  <Input
+                    id="images"
+                    value={imageUrls}
+                    onChange={(e) => setImageUrls(e.target.value)}
+                    placeholder="https://example.com/image1.jpg, https://example.com/image2.jpg"
+                  />
+                  <p className="text-xs text-muted-foreground">
+                    If none provided, a placeholder will be used
+                  </p>
+                </div>
+
+                <div className="space-y-2">
+                  <Label htmlFor="videos" className="flex items-center">
+                    <Video className="h-4 w-4 mr-1" />
+                    Videos (comma-separated URLs)
+                  </Label>
+                  <Input
+                    id="videos"
+                    value={videoUrls}
+                    onChange={(e) => setVideoUrls(e.target.value)}
+                    placeholder="https://example.com/video1.mp4, https://example.com/video2.mp4"
+                  />
+                </div>
+                
+                <div className="space-y-2">
+                  <Label htmlFor="featured">Featured Project</Label>
+                  <div className="flex items-center">
+                    <Input
+                      id="featured"
+                      type="checkbox"
+                      className="w-4 h-4 mr-2"
+                      checked={newProject.featured}
+                      onChange={(e) => setNewProject(prev => ({ ...prev, featured: e.target.checked }))}
+                    />
+                    <span className="text-sm">Mark as featured project</span>
+                  </div>
                 </div>
 
                 <Button type="submit" className="w-full">

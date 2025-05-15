@@ -1,3 +1,4 @@
+
 export interface Project {
   id: number;
   title: string;
@@ -8,6 +9,7 @@ export interface Project {
   techStack: string[];
   domain: string;
   images: string[];
+  videos?: string[];
   featured: boolean;
   soldCount: number;
 }

@@ -9,6 +9,7 @@ export interface IProject {
   techStack: string[];
   domain: string;
   images: string[];
+  videos?: string[];
   featured: boolean;
   soldCount: number;
 }
