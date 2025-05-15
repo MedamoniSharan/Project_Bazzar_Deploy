@@ -58,7 +58,7 @@ export default function AdminDashboard() {
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const res = await fetch("http://localhost:3000/api/projects");
+        const res = await fetch("https://project-palace-paradise.onrender.com/api/projects");
         const data = await res.json();
         setProjects(data);
         setStats((prev) => ({
@@ -95,7 +95,7 @@ export default function AdminDashboard() {
   const handleDelete = async (id) => {
     if (!window.confirm("Are you sure you want to delete this project?")) return;
     try {
-      const res = await fetch(`http://localhost:3000/api/projects/${id}`, { method: "DELETE" });
+      const res = await fetch(`https://project-palace-paradise.onrender.com/api/projects/${id}`, { method: "DELETE" });
       if (!res.ok) throw new Error("Failed to delete project");
       setProjects((prev) => prev.filter((proj) => proj._id !== id));
       toast({ title: "Deleted", description: "Project removed successfully" });
@@ -117,7 +117,7 @@ export default function AdminDashboard() {
     };
 
     const method = editingId ? "PUT" : "POST";
-    const url = editingId ? `http://localhost:3000/api/projects/${editingId}` : "http://localhost:3000/api/projects";
+    const url = editingId ? `https://project-palace-paradise.onrender.com/api/projects/${editingId}` : "https://project-palace-paradise.onrender.com/api/projects";
 
     try {
       const res = await fetch(url, {
