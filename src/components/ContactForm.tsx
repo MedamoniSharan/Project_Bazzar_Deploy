@@ -5,6 +5,9 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { useToast } from "@/components/ui/use-toast";
+import { Loader2 } from "lucide-react"; // add this icon import at the top
+
+
 
 export function ContactForm() {
   const { toast } = useToast();
@@ -13,6 +16,7 @@ export function ContactForm() {
     images: [],
     documents: [],
   });
+  const [loading, setLoading] = useState(false);
 
   const [formData, setFormData] = useState({
     name: "",
@@ -48,22 +52,51 @@ export function ContactForm() {
     }));
   };
 
+  // const handleSubmit = async (e: React.FormEvent) => {
+  //   e.preventDefault();
+
+  //   const payload = new FormData();
+  //   Object.entries(formData).forEach(([key, value]) => payload.append(key, value));
+  //   files.images.forEach((file) => payload.append("images", file));
+  //   files.documents.forEach((file) => payload.append("documents", file));
+
+  //   try {
+  //     const response = await fetch("http://localhost:3000/send-email", {
+  //       method: "POST",
+  //       body: payload,
+  //     });
+
+  //     const data = await response.json();
+
+  //     if (response.ok) {
+  //       toast({ title: "Success", description: data.message });
+  //       setFormData({ name: "", email: "", phone: "", projectName: "", description: "" });
+  //       setFiles({ images: [], documents: [] });
+  //     } else {
+  //       toast({ title: "Error", description: data.message });
+  //     }
+  //   } catch (error) {
+  //     toast({ title: "Error", description: "Failed to send email." });
+  //   }
+  // };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-
+    setLoading(true);
+  
     const payload = new FormData();
     Object.entries(formData).forEach(([key, value]) => payload.append(key, value));
     files.images.forEach((file) => payload.append("images", file));
     files.documents.forEach((file) => payload.append("documents", file));
-
+  
     try {
       const response = await fetch("http://localhost:3000/send-email", {
         method: "POST",
         body: payload,
       });
-
+  
       const data = await response.json();
-
+  
       if (response.ok) {
         toast({ title: "Success", description: data.message });
         setFormData({ name: "", email: "", phone: "", projectName: "", description: "" });
@@ -73,8 +106,11 @@ export function ContactForm() {
       }
     } catch (error) {
       toast({ title: "Error", description: "Failed to send email." });
+    } finally {
+      setLoading(false);
     }
   };
+  
 
   return (
     <section className="py-12" id="contact">
@@ -183,7 +219,18 @@ export function ContactForm() {
                 )}
               </div>
 
-              <Button type="submit" className="w-full">Submit Request</Button>
+              {/* <Button type="submit" className="w-full">Submit Request</Button> */}
+              <Button type="submit" className="w-full" disabled={loading}>
+  {loading ? (
+    <>
+      <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+      Sending...
+    </>
+  ) : (
+    "Submit Request"
+  )}
+</Button>
+
             </form>
           </CardContent>
         </Card>
