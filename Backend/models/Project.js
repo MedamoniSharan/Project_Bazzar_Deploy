@@ -12,6 +12,8 @@ const projectSchema = new mongoose.Schema({
   videos: [{ type: String }],
   featured: { type: Boolean, default: false },
   soldCount: { type: Number, default: 0 },
+  features : {type : String , default : "", required : true},
+  support : {type : String , default : "", required : true}
 }, { timestamps: true });
 
 export const Project = mongoose.model("Project", projectSchema);

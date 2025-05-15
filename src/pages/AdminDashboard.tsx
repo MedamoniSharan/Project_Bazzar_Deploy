@@ -41,7 +41,10 @@ export default function AdminDashboard() {
     videos: [],
     featured: false,
     soldCount: 0,
+    features: "",
+    support: "",
   });
+
   const [editingId, setEditingId] = useState(null);
   const [isEditOpen, setIsEditOpen] = useState(false);
   const [stats, setStats] = useState({
@@ -50,6 +53,7 @@ export default function AdminDashboard() {
     totalProjects: 0,
     totalRevenue: 0,
   });
+
   const [projects, setProjects] = useState([]);
   const [loading, setLoading] = useState(true);
   const [imageUrls, setImageUrls] = useState("");
@@ -68,11 +72,7 @@ export default function AdminDashboard() {
         }));
         setLoading(false);
       } catch (error) {
-        toast({
-          title: "Error",
-          description: "Failed to load projects",
-          variant: "destructive",
-        });
+        toast({ title: "Error", description: "Failed to load projects", variant: "destructive" });
         setLoading(false);
       }
     };
@@ -81,21 +81,12 @@ export default function AdminDashboard() {
 
   if (!isAuthenticated) return <Navigate to="/login" />;
 
-  const handleEdit = (project) => {
-    setNewProject({
-      ...project,
-      techStack: project.techStack.join(", "),
-    });
-    setImageUrls(project.images.join(", "));
-    setVideoUrls(project.videos.join(", "));
-    setEditingId(project._id);
-    setIsEditOpen(true);
-  };
-
   const handleDelete = async (id) => {
     if (!window.confirm("Are you sure you want to delete this project?")) return;
     try {
-      const res = await fetch(`https://project-palace-paradise.onrender.com/api/projects/${id}`, { method: "DELETE" });
+      const res = await fetch(`https://project-palace-paradise.onrender.com/api/projects/${id}`, {
+        method: "DELETE",
+      });
       if (!res.ok) throw new Error("Failed to delete project");
       setProjects((prev) => prev.filter((proj) => proj._id !== id));
       toast({ title: "Deleted", description: "Project removed successfully" });
@@ -108,16 +99,17 @@ export default function AdminDashboard() {
     e.preventDefault();
     const imagesArray = imageUrls.split(",").map((url) => url.trim()).filter(Boolean);
     const videosArray = videoUrls.split(",").map((url) => url.trim()).filter(Boolean);
-    const finalImages = imagesArray.length > 0 ? imagesArray : ["placeholder.svg"];
     const payload = {
       ...newProject,
       techStack: newProject.techStack.split(",").map((t) => t.trim()),
-      images: finalImages,
+      images: imagesArray.length > 0 ? imagesArray : ["placeholder.svg"],
       videos: videosArray,
     };
 
     const method = editingId ? "PUT" : "POST";
-    const url = editingId ? `https://project-palace-paradise.onrender.com/api/projects/${editingId}` : "https://project-palace-paradise.onrender.com/api/projects";
+    const url = editingId
+      ? `https://project-palace-paradise.onrender.com/api/projects/${editingId}`
+      : "https://project-palace-paradise.onrender.com/api/projects";
 
     try {
       const res = await fetch(url, {
@@ -127,10 +119,7 @@ export default function AdminDashboard() {
       });
       if (!res.ok) throw new Error("Failed to submit project");
       const result = await res.json();
-      toast({
-        title: "Success",
-        description: `Project '${result.title}' ${editingId ? "updated" : "created"} successfully`,
-      });
+      toast({ title: "Success", description: `Project '${result.title}' ${editingId ? "updated" : "created"} successfully` });
       if (editingId) {
         setProjects((prev) => prev.map((proj) => (proj._id === editingId ? result : proj)));
         setIsEditOpen(false);
@@ -141,7 +130,7 @@ export default function AdminDashboard() {
       setNewProject({
         title: "", description: "", shortDescription: "", price: 0, discountPercentage: 0,
         techStack: "", domain: "", images: ["placeholder.svg"], videos: [],
-        featured: false, soldCount: 0
+        featured: false, soldCount: 0, features: "", support: ""
       });
       setImageUrls("");
       setVideoUrls("");
@@ -149,6 +138,62 @@ export default function AdminDashboard() {
       toast({ title: "Error", description: err.message, variant: "destructive" });
     }
   };
+
+  const ProjectForm = (
+    <form onSubmit={handleSubmit} className="grid gap-4">
+      <div className="grid gap-2">
+        <Label htmlFor="title">Title</Label>
+        <Input id="title" value={newProject.title} onChange={(e) => setNewProject({ ...newProject, title: e.target.value })} required />
+      </div>
+      <div className="grid gap-2">
+        <Label htmlFor="shortDescription">Short Description</Label>
+        <Input id="shortDescription" value={newProject.shortDescription} onChange={(e) => setNewProject({ ...newProject, shortDescription: e.target.value })} required />
+      </div>
+      <div className="grid gap-2">
+        <Label htmlFor="description">Description</Label>
+        <Textarea id="description" rows={5} value={newProject.description} onChange={(e) => setNewProject({ ...newProject, description: e.target.value })} required />
+      </div>
+      <div className="grid md:grid-cols-2 gap-4">
+        <div className="grid gap-2">
+          <Label htmlFor="price">Price</Label>
+          <Input type="number" id="price" value={newProject.price} onChange={(e) => setNewProject({ ...newProject, price: +e.target.value })} required />
+        </div>
+        <div className="grid gap-2">
+          <Label htmlFor="discount">Discount %</Label>
+          <Input type="number" id="discount" value={newProject.discountPercentage} onChange={(e) => setNewProject({ ...newProject, discountPercentage: +e.target.value })} />
+        </div>
+      </div>
+      <div className="grid gap-2">
+        <Label htmlFor="techStack">Tech Stack</Label>
+        <Input id="techStack" value={newProject.techStack} onChange={(e) => setNewProject({ ...newProject, techStack: e.target.value })} required />
+      </div>
+      <div className="grid gap-2">
+        <Label htmlFor="domain">Domain</Label>
+        <Input id="domain" value={newProject.domain} onChange={(e) => setNewProject({ ...newProject, domain: e.target.value })} required />
+      </div>
+      <div className="grid gap-2">
+        <Label htmlFor="images">Image URLs (comma-separated)</Label>
+        <Input id="images" value={imageUrls} onChange={(e) => setImageUrls(e.target.value)} />
+      </div>
+      <div className="grid gap-2">
+        <Label htmlFor="videos">Video URLs (comma-separated)</Label>
+        <Input id="videos" value={videoUrls} onChange={(e) => setVideoUrls(e.target.value)} />
+      </div>
+      <div className="grid gap-2">
+        <Label htmlFor="features">Features</Label>
+        <Textarea id="features" rows={3} value={newProject.features} onChange={(e) => setNewProject({ ...newProject, features: e.target.value })} required />
+      </div>
+      <div className="grid gap-2">
+        <Label htmlFor="support">Support</Label>
+        <Textarea id="support" rows={3} value={newProject.support} onChange={(e) => setNewProject({ ...newProject, support: e.target.value })} required />
+      </div>
+      <div className="flex items-center gap-2">
+        <input type="checkbox" id="featured" checked={newProject.featured} onChange={(e) => setNewProject({ ...newProject, featured: e.target.checked })} />
+        <Label htmlFor="featured">Mark as featured</Label>
+      </div>
+      <Button type="submit" className="mt-2">{editingId ? "Update Project" : "Submit Project"}</Button>
+    </form>
+  );
 
   return (
     <div className="container py-8">
@@ -179,7 +224,6 @@ export default function AdminDashboard() {
                     <TableRow>
                       <TableHead>ID</TableHead>
                       <TableHead>Title</TableHead>
-                      <TableHead>Price</TableHead>
                       <TableHead>Domain</TableHead>
                       <TableHead>Sales</TableHead>
                       <TableHead>Actions</TableHead>
@@ -190,12 +234,17 @@ export default function AdminDashboard() {
                       <TableRow key={p._id}>
                         <TableCell>{p._id}</TableCell>
                         <TableCell>{p.title}</TableCell>
-                        <TableCell>${p.price}</TableCell>
                         <TableCell>{p.domain}</TableCell>
                         <TableCell>{p.soldCount}</TableCell>
                         <TableCell className="space-x-2">
-                          <Button size="sm" onClick={() => handleEdit(p)} variant="outline">Edit</Button>
-                          <Button size="sm" onClick={() => handleDelete(p._id)} variant="destructive">Delete</Button>
+                          <Button size="sm" variant="outline" onClick={() => {
+                            setNewProject({ ...p, techStack: p.techStack.join(", ") });
+                            setImageUrls(p.images.join(", "));
+                            setVideoUrls(p.videos.join(", "));
+                            setEditingId(p._id);
+                            setIsEditOpen(true);
+                          }}>Edit</Button>
+                          <Button size="sm" variant="destructive" onClick={() => handleDelete(p._id)}>Delete</Button>
                         </TableCell>
                       </TableRow>
                     ))}
@@ -209,61 +258,14 @@ export default function AdminDashboard() {
         <TabsContent value="add">
           <Card>
             <CardHeader>
-              <CardTitle>Add New Project</CardTitle>
-              <CardDescription>Fill all required fields</CardDescription>
+              <CardTitle>{editingId ? 'Edit Project' : 'Add New Project'}</CardTitle>
+              <CardDescription>Fill out the project details below.</CardDescription>
             </CardHeader>
-            <CardContent>
-              <form onSubmit={handleSubmit} className="grid gap-4">
-                <div className="grid gap-2">
-                  <Label htmlFor="title">Title</Label>
-                  <Input id="title" value={newProject.title} onChange={(e) => setNewProject({ ...newProject, title: e.target.value })} required />
-                </div>
-                <div className="grid gap-2">
-                  <Label htmlFor="shortDescription">Short Description</Label>
-                  <Input id="shortDescription" value={newProject.shortDescription} onChange={(e) => setNewProject({ ...newProject, shortDescription: e.target.value })} required />
-                </div>
-                <div className="grid gap-2">
-                  <Label htmlFor="description">Description</Label>
-                  <Textarea id="description" rows={5} value={newProject.description} onChange={(e) => setNewProject({ ...newProject, description: e.target.value })} required />
-                </div>
-                <div className="grid md:grid-cols-2 gap-4">
-                  <div className="grid gap-2">
-                    <Label htmlFor="price">Price</Label>
-                    <Input type="number" id="price" value={newProject.price} onChange={(e) => setNewProject({ ...newProject, price: +e.target.value })} required />
-                  </div>
-                  <div className="grid gap-2">
-                    <Label htmlFor="discount">Discount %</Label>
-                    <Input type="number" id="discount" value={newProject.discountPercentage} onChange={(e) => setNewProject({ ...newProject, discountPercentage: +e.target.value })} />
-                  </div>
-                </div>
-                <div className="grid gap-2">
-                  <Label htmlFor="techStack">Tech Stack</Label>
-                  <Input id="techStack" value={newProject.techStack} onChange={(e) => setNewProject({ ...newProject, techStack: e.target.value })} required />
-                </div>
-                <div className="grid gap-2">
-                  <Label htmlFor="domain">Domain</Label>
-                  <Input id="domain" value={newProject.domain} onChange={(e) => setNewProject({ ...newProject, domain: e.target.value })} required />
-                </div>
-                <div className="grid gap-2">
-                  <Label htmlFor="images">Image URLs (comma-separated)</Label>
-                  <Input id="images" value={imageUrls} onChange={(e) => setImageUrls(e.target.value)} />
-                </div>
-                <div className="grid gap-2">
-                  <Label htmlFor="videos">Video URLs (comma-separated)</Label>
-                  <Input id="videos" value={videoUrls} onChange={(e) => setVideoUrls(e.target.value)} />
-                </div>
-                <div className="flex items-center gap-2">
-                  <input type="checkbox" id="featured" checked={newProject.featured} onChange={(e) => setNewProject({ ...newProject, featured: e.target.checked })} />
-                  <Label htmlFor="featured">Mark as featured</Label>
-                </div>
-                <Button type="submit" className="mt-2">Submit Project</Button>
-              </form>
-            </CardContent>
+            <CardContent>{ProjectForm}</CardContent>
           </Card>
         </TabsContent>
       </Tabs>
 
-      {/* 🔄 Edit Dialog */}
       <Dialog.Root open={isEditOpen} onOpenChange={setIsEditOpen}>
         <Dialog.Portal>
           <Dialog.Overlay className="fixed inset-0 bg-black/40 z-40" />
@@ -274,31 +276,7 @@ export default function AdminDashboard() {
                 <Button variant="ghost"><X className="w-5 h-5" /></Button>
               </Dialog.Close>
             </div>
-            {/* Reuse the same form for editing */}
-            <form onSubmit={handleSubmit} className="grid gap-4">
-              <div className="grid gap-2">
-                <Label htmlFor="title">Title</Label>
-                <Input id="title" value={newProject.title} onChange={(e) => setNewProject({ ...newProject, title: e.target.value })} required />
-              </div>
-              {/* repeat fields as above */}
-              <div className="grid gap-2">
-                <Label htmlFor="techStack">Tech Stack</Label>
-                <Input id="techStack" value={newProject.techStack} onChange={(e) => setNewProject({ ...newProject, techStack: e.target.value })} />
-              </div>
-              <div className="grid gap-2">
-                <Label htmlFor="domain">Domain</Label>
-                <Input id="domain" value={newProject.domain} onChange={(e) => setNewProject({ ...newProject, domain: e.target.value })} />
-              </div>
-              <div className="grid gap-2">
-                <Label htmlFor="images">Image URLs</Label>
-                <Input id="images" value={imageUrls} onChange={(e) => setImageUrls(e.target.value)} />
-              </div>
-              <div className="grid gap-2">
-                <Label htmlFor="videos">Video URLs</Label>
-                <Input id="videos" value={videoUrls} onChange={(e) => setVideoUrls(e.target.value)} />
-              </div>
-              <Button type="submit">Update Project</Button>
-            </form>
+            <div className="mt-2">{ProjectForm}</div>
           </Dialog.Content>
         </Dialog.Portal>
       </Dialog.Root>
