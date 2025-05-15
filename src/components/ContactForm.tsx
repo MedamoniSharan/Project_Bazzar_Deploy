@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -9,45 +8,79 @@ import { useToast } from "@/components/ui/use-toast";
 
 export function ContactForm() {
   const { toast } = useToast();
-  const [files, setFiles] = useState<{ images: File[], documents: File[] }>({
+
+  const [files, setFiles] = useState<{ images: File[]; documents: File[] }>({
     images: [],
     documents: [],
   });
-  
-  const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
-    e.preventDefault();
-    toast({
-      title: "Form submitted successfully",
-      description: "We will get back to you soon!",
-    });
+
+  const [formData, setFormData] = useState({
+    name: "",
+    email: "",
+    phone: "",
+    projectName: "",
+    description: "",
+  });
+
+  const handleInputChange = (
+    e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
+  ) => {
+    const { id, value } = e.target;
+    setFormData((prev) => ({ ...prev, [id]: value }));
   };
-  
+
   const handleFileChange = (
     e: React.ChangeEvent<HTMLInputElement>,
     type: "images" | "documents"
   ) => {
     if (!e.target.files?.length) return;
-    
     const newFiles = Array.from(e.target.files);
-    
-    setFiles(prev => ({
+    setFiles((prev) => ({
       ...prev,
       [type]: [...prev[type], ...newFiles],
     }));
   };
-  
+
   const removeFile = (index: number, type: "images" | "documents") => {
-    setFiles(prev => ({
+    setFiles((prev) => ({
       ...prev,
       [type]: prev[type].filter((_, i) => i !== index),
     }));
+  };
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+
+    const payload = new FormData();
+    Object.entries(formData).forEach(([key, value]) => payload.append(key, value));
+    files.images.forEach((file) => payload.append("images", file));
+    files.documents.forEach((file) => payload.append("documents", file));
+
+    try {
+      const response = await fetch("http://localhost:3000/send-email", {
+        method: "POST",
+        body: payload,
+      });
+
+      const data = await response.json();
+
+      if (response.ok) {
+        toast({ title: "Success", description: data.message });
+        setFormData({ name: "", email: "", phone: "", projectName: "", description: "" });
+        setFiles({ images: [], documents: [] });
+      } else {
+        toast({ title: "Error", description: data.message });
+      }
+    } catch (error) {
+      toast({ title: "Error", description: "Failed to send email." });
+    }
   };
 
   return (
     <section className="py-12" id="contact">
       <div className="container">
         <h2 className="text-3xl font-bold mb-8 text-center">Request a Custom Project</h2>
-        
+
         <Card className="max-w-3xl mx-auto">
           <CardHeader>
             <CardTitle>Contact Us</CardTitle>
@@ -60,32 +93,35 @@ export function ContactForm() {
               <div className="grid md:grid-cols-2 gap-4">
                 <div className="space-y-2">
                   <Label htmlFor="name">Full Name</Label>
-                  <Input id="name" placeholder="John Doe" required />
+                  <Input id="name" value={formData.name} onChange={handleInputChange} required />
                 </div>
                 <div className="space-y-2">
                   <Label htmlFor="email">Email</Label>
-                  <Input id="email" type="email" placeholder="john@example.com" required />
+                  <Input id="email" type="email" value={formData.email} onChange={handleInputChange} required />
                 </div>
                 <div className="space-y-2">
                   <Label htmlFor="phone">Phone Number</Label>
-                  <Input id="phone" placeholder="(123) 456-7890" />
+                  <Input id="phone" value={formData.phone} onChange={handleInputChange} />
                 </div>
                 <div className="space-y-2">
-                  <Label htmlFor="project-name">Project Title</Label>
-                  <Input id="project-name" placeholder="E-Commerce Website" required />
+                  <Label htmlFor="projectName">Project Title</Label>
+                  <Input id="projectName" value={formData.projectName} onChange={handleInputChange} required />
                 </div>
               </div>
-              
+
               <div className="space-y-2">
                 <Label htmlFor="description">Project Description</Label>
-                <Textarea 
-                  id="description" 
-                  placeholder="Please describe your project requirements in detail..." 
+                <Textarea
+                  id="description"
+                  value={formData.description}
+                  onChange={handleInputChange}
+                  placeholder="Please describe your project requirements in detail..."
                   className="min-h-32"
                   required
                 />
               </div>
-              
+
+              {/* Image Upload */}
               <div className="space-y-2">
                 <Label htmlFor="images">Sample Images (Optional)</Label>
                 <Input
@@ -118,7 +154,8 @@ export function ContactForm() {
                   </div>
                 )}
               </div>
-              
+
+              {/* Document Upload */}
               <div className="space-y-2">
                 <Label htmlFor="documents">Documents (Optional)</Label>
                 <Input
@@ -145,7 +182,7 @@ export function ContactForm() {
                   </div>
                 )}
               </div>
-              
+
               <Button type="submit" className="w-full">Submit Request</Button>
             </form>
           </CardContent>
