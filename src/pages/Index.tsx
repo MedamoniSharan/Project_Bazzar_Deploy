@@ -8,6 +8,7 @@ import { TechStackSlider } from "@/components/TechStackSlider";
 import { ContactForm } from "@/components/ContactForm";
 import { Footer } from "@/components/Footer";
 import { ProjectCard } from "@/components/ProjectCard";
+import StatsSection from "./StatsSection";
 
 // Project Type
 export interface Project {
@@ -128,6 +129,7 @@ const Index = () => {
 
         {/* Tech Stack and Contact */}
         <TechStackSlider />
+        <StatsSection />
         <ContactForm />
       </main>
 
