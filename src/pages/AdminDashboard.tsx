@@ -1,4 +1,3 @@
-
 import { useAuth } from "@/context/AuthContext";
 import { Navigate } from "react-router-dom";
 import { useState, useEffect } from "react";
@@ -22,25 +21,14 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { ProjectModel } from "@/models/Project";
 import { useToast } from "@/components/ui/use-toast";
-import { Project } from "@/data/projects";
-import { 
-  LayoutDashboard, 
-  Users, 
-  Package, 
-  FileText,
-  ShoppingCart,
-  BarChart,
-  Image,
-  Video,
-  DollarSign,
-  Percent
-} from "lucide-react";
+import { LayoutDashboard, X } from "lucide-react";
+import * as Dialog from "@radix-ui/react-dialog";
 
 export default function AdminDashboard() {
   const { isAuthenticated } = useAuth();
   const { toast } = useToast();
+
   const [newProject, setNewProject] = useState({
     title: "",
     description: "",
@@ -54,199 +42,138 @@ export default function AdminDashboard() {
     featured: false,
     soldCount: 0,
   });
+  const [editingId, setEditingId] = useState(null);
+  const [isEditOpen, setIsEditOpen] = useState(false);
   const [stats, setStats] = useState({
     totalUsers: 0,
     totalPurchases: 0,
     totalProjects: 0,
-    totalRevenue: 0
+    totalRevenue: 0,
   });
-  const [projects, setProjects] = useState<Project[]>([]);
+  const [projects, setProjects] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [imageUrls, setImageUrls] = useState<string>("");
-  const [videoUrls, setVideoUrls] = useState<string>("");
+  const [imageUrls, setImageUrls] = useState("");
+  const [videoUrls, setVideoUrls] = useState("");
 
   useEffect(() => {
-    // Simulate fetching stats and projects from API
     const fetchData = async () => {
       try {
-        // In a real app, these would be API calls
-        // Mock data for demo purposes
-        setStats({
-          totalUsers: 126,
-          totalPurchases: 285,
-          totalProjects: 10,
-          totalRevenue: 24850
-        });
-        
-        import("@/data/projects").then(({ projects }) => {
-          setProjects(projects);
-          setLoading(false);
-        });
+        const res = await fetch("http://localhost:3000/api/projects");
+        const data = await res.json();
+        setProjects(data);
+        setStats((prev) => ({
+          ...prev,
+          totalProjects: data.length,
+          totalRevenue: data.reduce((acc, p) => acc + p.price, 0),
+        }));
+        setLoading(false);
       } catch (error) {
-        console.error("Error fetching admin data:", error);
         toast({
           title: "Error",
-          description: "Failed to load dashboard data",
+          description: "Failed to load projects",
           variant: "destructive",
         });
         setLoading(false);
       }
     };
-
     fetchData();
   }, [toast]);
 
-  if (!isAuthenticated) {
-    return <Navigate to="/login" />;
-  }
+  if (!isAuthenticated) return <Navigate to="/login" />;
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    
-    // Process image URLs from comma-separated string to array
-    const imagesArray = imageUrls
-      .split(',')
-      .map(url => url.trim())
-      .filter(url => url.length > 0);
-    
-    // Process video URLs from comma-separated string to array
-    const videosArray = videoUrls
-      .split(',')
-      .map(url => url.trim())
-      .filter(url => url.length > 0);
-    
-    // Use default placeholder if no images provided
-    const finalImages = imagesArray.length > 0 ? imagesArray : ["placeholder.svg"];
-    
+  const handleEdit = (project) => {
+    setNewProject({
+      ...project,
+      techStack: project.techStack.join(", "),
+    });
+    setImageUrls(project.images.join(", "));
+    setVideoUrls(project.videos.join(", "));
+    setEditingId(project._id);
+    setIsEditOpen(true);
+  };
+
+  const handleDelete = async (id) => {
+    if (!window.confirm("Are you sure you want to delete this project?")) return;
     try {
-      await ProjectModel.create({
-        ...newProject,
-        id: Date.now(),
-        techStack: newProject.techStack.split(",").map(tech => tech.trim()),
-        images: finalImages,
-        videos: videosArray,
+      const res = await fetch(`http://localhost:3000/api/projects/${id}`, { method: "DELETE" });
+      if (!res.ok) throw new Error("Failed to delete project");
+      setProjects((prev) => prev.filter((proj) => proj._id !== id));
+      toast({ title: "Deleted", description: "Project removed successfully" });
+    } catch (err) {
+      toast({ title: "Error", description: err.message, variant: "destructive" });
+    }
+  };
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    const imagesArray = imageUrls.split(",").map((url) => url.trim()).filter(Boolean);
+    const videosArray = videoUrls.split(",").map((url) => url.trim()).filter(Boolean);
+    const finalImages = imagesArray.length > 0 ? imagesArray : ["placeholder.svg"];
+    const payload = {
+      ...newProject,
+      techStack: newProject.techStack.split(",").map((t) => t.trim()),
+      images: finalImages,
+      videos: videosArray,
+    };
+
+    const method = editingId ? "PUT" : "POST";
+    const url = editingId ? `http://localhost:3000/api/projects/${editingId}` : "http://localhost:3000/api/projects";
+
+    try {
+      const res = await fetch(url, {
+        method,
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payload),
       });
-      
+      if (!res.ok) throw new Error("Failed to submit project");
+      const result = await res.json();
       toast({
         title: "Success",
-        description: "Project added successfully",
+        description: `Project '${result.title}' ${editingId ? "updated" : "created"} successfully`,
       });
-      
-      // Reset form
+      if (editingId) {
+        setProjects((prev) => prev.map((proj) => (proj._id === editingId ? result : proj)));
+        setIsEditOpen(false);
+      } else {
+        setProjects((prev) => [result, ...prev]);
+      }
+      setEditingId(null);
       setNewProject({
-        title: "",
-        description: "",
-        shortDescription: "",
-        price: 0,
-        discountPercentage: 0,
-        techStack: "",
-        domain: "",
-        images: ["placeholder.svg"],
-        videos: [],
-        featured: false,
-        soldCount: 0,
+        title: "", description: "", shortDescription: "", price: 0, discountPercentage: 0,
+        techStack: "", domain: "", images: ["placeholder.svg"], videos: [],
+        featured: false, soldCount: 0
       });
       setImageUrls("");
       setVideoUrls("");
-      
-      // Update projects list
-      import("@/data/projects").then(({ projects }) => {
-        setProjects(projects);
-      });
-    } catch (error) {
-      toast({
-        title: "Error",
-        description: "Failed to add project",
-        variant: "destructive",
-      });
+    } catch (err) {
+      toast({ title: "Error", description: err.message, variant: "destructive" });
     }
   };
 
   return (
     <div className="container py-8">
       <h1 className="text-3xl font-bold mb-6 flex items-center">
-        <LayoutDashboard className="mr-2 h-6 w-6" />
-        Admin Dashboard
+        <LayoutDashboard className="mr-2 h-6 w-6" /> Admin Dashboard
       </h1>
-      
+
       <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-4 mb-8">
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Total Users</CardTitle>
-            <Users className="h-4 w-4 text-muted-foreground" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">{stats.totalUsers}</div>
-            <p className="text-xs text-muted-foreground">
-              Registered users
-            </p>
-          </CardContent>
-        </Card>
-        
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Total Purchases</CardTitle>
-            <ShoppingCart className="h-4 w-4 text-muted-foreground" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">{stats.totalPurchases}</div>
-            <p className="text-xs text-muted-foreground">
-              Projects purchased
-            </p>
-          </CardContent>
-        </Card>
-        
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Projects</CardTitle>
-            <Package className="h-4 w-4 text-muted-foreground" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">{stats.totalProjects}</div>
-            <p className="text-xs text-muted-foreground">
-              Available projects
-            </p>
-          </CardContent>
-        </Card>
-        
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Revenue</CardTitle>
-            <BarChart className="h-4 w-4 text-muted-foreground" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">${stats.totalRevenue}</div>
-            <p className="text-xs text-muted-foreground">
-              Total revenue
-            </p>
-          </CardContent>
-        </Card>
+        <Card><CardHeader><CardTitle>Total Users</CardTitle></CardHeader><CardContent><div className="text-2xl font-bold">{stats.totalUsers}</div></CardContent></Card>
+        <Card><CardHeader><CardTitle>Total Purchases</CardTitle></CardHeader><CardContent><div className="text-2xl font-bold">{stats.totalPurchases}</div></CardContent></Card>
+        <Card><CardHeader><CardTitle>Total Projects</CardTitle></CardHeader><CardContent><div className="text-2xl font-bold">{stats.totalProjects}</div></CardContent></Card>
+        <Card><CardHeader><CardTitle>Total Revenue</CardTitle></CardHeader><CardContent><div className="text-2xl font-bold">${stats.totalRevenue}</div></CardContent></Card>
       </div>
-      
+
       <Tabs defaultValue="projects">
         <TabsList className="mb-6">
-          <TabsTrigger value="projects" className="flex items-center">
-            <Package className="mr-2 h-4 w-4" />
-            <span>Manage Projects</span>
-          </TabsTrigger>
-          <TabsTrigger value="add" className="flex items-center">
-            <FileText className="mr-2 h-4 w-4" />
-            <span>Add Project</span>
-          </TabsTrigger>
+          <TabsTrigger value="projects">Manage Projects</TabsTrigger>
+          <TabsTrigger value="add">Add Project</TabsTrigger>
         </TabsList>
-        
+
         <TabsContent value="projects">
           <Card>
-            <CardHeader>
-              <CardTitle>Projects</CardTitle>
-              <CardDescription>
-                Manage your uploaded projects here
-              </CardDescription>
-            </CardHeader>
+            <CardHeader><CardTitle>All Projects</CardTitle></CardHeader>
             <CardContent>
-              {loading ? (
-                <div className="py-4 text-center">Loading projects...</div>
-              ) : (
+              {loading ? <p>Loading...</p> : (
                 <Table>
                   <TableHeader>
                     <TableRow>
@@ -255,16 +182,21 @@ export default function AdminDashboard() {
                       <TableHead>Price</TableHead>
                       <TableHead>Domain</TableHead>
                       <TableHead>Sales</TableHead>
+                      <TableHead>Actions</TableHead>
                     </TableRow>
                   </TableHeader>
                   <TableBody>
-                    {projects.map((project) => (
-                      <TableRow key={project.id}>
-                        <TableCell>{project.id}</TableCell>
-                        <TableCell>{project.title}</TableCell>
-                        <TableCell>${project.price}</TableCell>
-                        <TableCell>{project.domain}</TableCell>
-                        <TableCell>{project.soldCount}</TableCell>
+                    {projects.map((p) => (
+                      <TableRow key={p._id}>
+                        <TableCell>{p._id}</TableCell>
+                        <TableCell>{p.title}</TableCell>
+                        <TableCell>${p.price}</TableCell>
+                        <TableCell>{p.domain}</TableCell>
+                        <TableCell>{p.soldCount}</TableCell>
+                        <TableCell className="space-x-2">
+                          <Button size="sm" onClick={() => handleEdit(p)} variant="outline">Edit</Button>
+                          <Button size="sm" onClick={() => handleDelete(p._id)} variant="destructive">Delete</Button>
+                        </TableCell>
                       </TableRow>
                     ))}
                   </TableBody>
@@ -273,150 +205,103 @@ export default function AdminDashboard() {
             </CardContent>
           </Card>
         </TabsContent>
-        
+
         <TabsContent value="add">
           <Card>
             <CardHeader>
               <CardTitle>Add New Project</CardTitle>
-              <CardDescription>Fill in the project details below</CardDescription>
+              <CardDescription>Fill all required fields</CardDescription>
             </CardHeader>
             <CardContent>
-              <form onSubmit={handleSubmit} className="space-y-4">
-                <div className="space-y-2">
+              <form onSubmit={handleSubmit} className="grid gap-4">
+                <div className="grid gap-2">
                   <Label htmlFor="title">Title</Label>
-                  <Input
-                    id="title"
-                    value={newProject.title}
-                    onChange={(e) => setNewProject(prev => ({ ...prev, title: e.target.value }))}
-                    required
-                  />
+                  <Input id="title" value={newProject.title} onChange={(e) => setNewProject({ ...newProject, title: e.target.value })} required />
                 </div>
-                
-                <div className="space-y-2">
+                <div className="grid gap-2">
                   <Label htmlFor="shortDescription">Short Description</Label>
-                  <Input
-                    id="shortDescription"
-                    value={newProject.shortDescription}
-                    onChange={(e) => setNewProject(prev => ({ ...prev, shortDescription: e.target.value }))}
-                    required
-                  />
+                  <Input id="shortDescription" value={newProject.shortDescription} onChange={(e) => setNewProject({ ...newProject, shortDescription: e.target.value })} required />
                 </div>
-
-                <div className="space-y-2">
-                  <Label htmlFor="description">Full Description</Label>
-                  <Textarea
-                    id="description"
-                    value={newProject.description}
-                    onChange={(e) => setNewProject(prev => ({ ...prev, description: e.target.value }))}
-                    rows={5}
-                    required
-                  />
+                <div className="grid gap-2">
+                  <Label htmlFor="description">Description</Label>
+                  <Textarea id="description" rows={5} value={newProject.description} onChange={(e) => setNewProject({ ...newProject, description: e.target.value })} required />
                 </div>
-
-                <div className="grid grid-cols-2 gap-4">
-                  <div className="space-y-2">
-                    <Label htmlFor="price" className="flex items-center">
-                      <DollarSign className="h-4 w-4 mr-1" />
-                      Price
-                    </Label>
-                    <Input
-                      id="price"
-                      type="number"
-                      min="0"
-                      value={newProject.price}
-                      onChange={(e) => setNewProject(prev => ({ ...prev, price: Number(e.target.value) }))}
-                      required
-                    />
+                <div className="grid md:grid-cols-2 gap-4">
+                  <div className="grid gap-2">
+                    <Label htmlFor="price">Price</Label>
+                    <Input type="number" id="price" value={newProject.price} onChange={(e) => setNewProject({ ...newProject, price: +e.target.value })} required />
                   </div>
-
-                  <div className="space-y-2">
-                    <Label htmlFor="discount" className="flex items-center">
-                      <Percent className="h-4 w-4 mr-1" />
-                      Discount %
-                    </Label>
-                    <Input
-                      id="discount"
-                      type="number"
-                      min="0"
-                      max="100"
-                      value={newProject.discountPercentage}
-                      onChange={(e) => setNewProject(prev => ({ ...prev, discountPercentage: Number(e.target.value) }))}
-                    />
+                  <div className="grid gap-2">
+                    <Label htmlFor="discount">Discount %</Label>
+                    <Input type="number" id="discount" value={newProject.discountPercentage} onChange={(e) => setNewProject({ ...newProject, discountPercentage: +e.target.value })} />
                   </div>
                 </div>
-
-                <div className="space-y-2">
-                  <Label htmlFor="techStack">Tech Stack (comma-separated)</Label>
-                  <Input
-                    id="techStack"
-                    value={newProject.techStack}
-                    onChange={(e) => setNewProject(prev => ({ ...prev, techStack: e.target.value }))}
-                    placeholder="React, TypeScript, Tailwind"
-                    required
-                  />
+                <div className="grid gap-2">
+                  <Label htmlFor="techStack">Tech Stack</Label>
+                  <Input id="techStack" value={newProject.techStack} onChange={(e) => setNewProject({ ...newProject, techStack: e.target.value })} required />
                 </div>
-
-                <div className="space-y-2">
+                <div className="grid gap-2">
                   <Label htmlFor="domain">Domain</Label>
-                  <Input
-                    id="domain"
-                    value={newProject.domain}
-                    onChange={(e) => setNewProject(prev => ({ ...prev, domain: e.target.value }))}
-                    required
-                  />
+                  <Input id="domain" value={newProject.domain} onChange={(e) => setNewProject({ ...newProject, domain: e.target.value })} required />
                 </div>
-
-                <div className="space-y-2">
-                  <Label htmlFor="images" className="flex items-center">
-                    <Image className="h-4 w-4 mr-1" />
-                    Images (comma-separated URLs)
-                  </Label>
-                  <Input
-                    id="images"
-                    value={imageUrls}
-                    onChange={(e) => setImageUrls(e.target.value)}
-                    placeholder="https://example.com/image1.jpg, https://example.com/image2.jpg"
-                  />
-                  <p className="text-xs text-muted-foreground">
-                    If none provided, a placeholder will be used
-                  </p>
+                <div className="grid gap-2">
+                  <Label htmlFor="images">Image URLs (comma-separated)</Label>
+                  <Input id="images" value={imageUrls} onChange={(e) => setImageUrls(e.target.value)} />
                 </div>
-
-                <div className="space-y-2">
-                  <Label htmlFor="videos" className="flex items-center">
-                    <Video className="h-4 w-4 mr-1" />
-                    Videos (comma-separated URLs)
-                  </Label>
-                  <Input
-                    id="videos"
-                    value={videoUrls}
-                    onChange={(e) => setVideoUrls(e.target.value)}
-                    placeholder="https://example.com/video1.mp4, https://example.com/video2.mp4"
-                  />
+                <div className="grid gap-2">
+                  <Label htmlFor="videos">Video URLs (comma-separated)</Label>
+                  <Input id="videos" value={videoUrls} onChange={(e) => setVideoUrls(e.target.value)} />
                 </div>
-                
-                <div className="space-y-2">
-                  <Label htmlFor="featured">Featured Project</Label>
-                  <div className="flex items-center">
-                    <Input
-                      id="featured"
-                      type="checkbox"
-                      className="w-4 h-4 mr-2"
-                      checked={newProject.featured}
-                      onChange={(e) => setNewProject(prev => ({ ...prev, featured: e.target.checked }))}
-                    />
-                    <span className="text-sm">Mark as featured project</span>
-                  </div>
+                <div className="flex items-center gap-2">
+                  <input type="checkbox" id="featured" checked={newProject.featured} onChange={(e) => setNewProject({ ...newProject, featured: e.target.checked })} />
+                  <Label htmlFor="featured">Mark as featured</Label>
                 </div>
-
-                <Button type="submit" className="w-full">
-                  Add Project
-                </Button>
+                <Button type="submit" className="mt-2">Submit Project</Button>
               </form>
             </CardContent>
           </Card>
         </TabsContent>
       </Tabs>
+
+      {/* 🔄 Edit Dialog */}
+      <Dialog.Root open={isEditOpen} onOpenChange={setIsEditOpen}>
+        <Dialog.Portal>
+          <Dialog.Overlay className="fixed inset-0 bg-black/40 z-40" />
+          <Dialog.Content className="fixed top-1/2 left-1/2 max-h-[90vh] w-full max-w-2xl -translate-x-1/2 -translate-y-1/2 bg-white p-6 shadow-lg rounded-md z-50 overflow-y-auto">
+            <div className="flex justify-between items-center mb-4">
+              <Dialog.Title className="text-xl font-semibold">Edit Project</Dialog.Title>
+              <Dialog.Close asChild>
+                <Button variant="ghost"><X className="w-5 h-5" /></Button>
+              </Dialog.Close>
+            </div>
+            {/* Reuse the same form for editing */}
+            <form onSubmit={handleSubmit} className="grid gap-4">
+              <div className="grid gap-2">
+                <Label htmlFor="title">Title</Label>
+                <Input id="title" value={newProject.title} onChange={(e) => setNewProject({ ...newProject, title: e.target.value })} required />
+              </div>
+              {/* repeat fields as above */}
+              <div className="grid gap-2">
+                <Label htmlFor="techStack">Tech Stack</Label>
+                <Input id="techStack" value={newProject.techStack} onChange={(e) => setNewProject({ ...newProject, techStack: e.target.value })} />
+              </div>
+              <div className="grid gap-2">
+                <Label htmlFor="domain">Domain</Label>
+                <Input id="domain" value={newProject.domain} onChange={(e) => setNewProject({ ...newProject, domain: e.target.value })} />
+              </div>
+              <div className="grid gap-2">
+                <Label htmlFor="images">Image URLs</Label>
+                <Input id="images" value={imageUrls} onChange={(e) => setImageUrls(e.target.value)} />
+              </div>
+              <div className="grid gap-2">
+                <Label htmlFor="videos">Video URLs</Label>
+                <Input id="videos" value={videoUrls} onChange={(e) => setVideoUrls(e.target.value)} />
+              </div>
+              <Button type="submit">Update Project</Button>
+            </form>
+          </Dialog.Content>
+        </Dialog.Portal>
+      </Dialog.Root>
     </div>
   );
 }
