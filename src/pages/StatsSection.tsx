@@ -5,7 +5,7 @@ import { Users, Building2, Bot, Handshake } from "lucide-react";
 
 const stats = [
   { icon: <Users className="w-8 h-8 text-white" />, value: 200, suffix: "+", label: "Users", color: "text-blue-500" },
-  { icon: <Building2 className="w-8 h-8 text-white" />, value: 15, suffix: "+", label: "Companies", color: "text-purple-500" },
+  { icon: <Building2 className="w-8 h-8 text-white" />, value: 15, suffix: "+", label: "Projects", color: "text-purple-500" },
   { icon: <Bot className="w-8 h-8 text-white" />, value: 50, suffix: "+", label: "Tech Stack", color: "text-orange-500" },
   { icon: <Handshake className="w-8 h-8 text-white" />, value: 20, suffix: "+", label: "Domain", color: "text-green-500" },
 ];
