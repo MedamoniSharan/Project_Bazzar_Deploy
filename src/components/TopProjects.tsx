@@ -138,13 +138,13 @@ function MainProjectCard({ project }: { project: Project }) {
           <div className="font-bold">
             {discountedPrice ? (
               <div className="flex items-center gap-2">
-                <span className="text-xl">${discountedPrice.toFixed(2)}</span>
+                <span className="text-xl"> ₹{discountedPrice.toFixed(2)}</span>
                 <span className="text-muted-foreground line-through">
-                  ${project.price.toFixed(2)}
+                ₹{project.price.toFixed(2)}
                 </span>
               </div>
             ) : (
-              <span className="text-xl">${project.price.toFixed(2)}</span>
+              <span className="text-xl"> ₹{project.price.toFixed(2)}</span>
             )}
           </div>
           <Link to={`/project/${project._id}`}>
@@ -199,13 +199,13 @@ function SideProjectCard({
           <div className="font-bold">
             {discountedPrice ? (
               <div className="flex items-center gap-1">
-                <span>${discountedPrice.toFixed(2)}</span>
+                <span> ₹{discountedPrice.toFixed(2)}</span>
                 <span className="text-muted-foreground line-through text-xs">
-                  ${project.price.toFixed(2)}
+                ₹{project.price.toFixed(2)}
                 </span>
               </div>
             ) : (
-              <span>${project.price.toFixed(2)}</span>
+              <span> ₹{project.price.toFixed(2)}</span>
             )}
           </div>
         </div>
