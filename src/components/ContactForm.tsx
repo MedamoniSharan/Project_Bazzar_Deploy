@@ -6,7 +6,6 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { useToast } from "@/components/ui/use-toast";
 import { Loader2 } from "lucide-react"; // add this icon import at the top
-import { GradualSpacing } from "./GradualSpacing";
 
 
 
@@ -53,6 +52,8 @@ export function ContactForm() {
     }));
   };
 
+  
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
@@ -88,9 +89,7 @@ export function ContactForm() {
   return (
     <section className="py-12" id="contact">
       <div className="container">
-      <div className="mb-8 text-center">
-    <GradualSpacing text="Request a Custom Project" />
-  </div>
+        <h2 className="text-3xl font-bold mb-8 text-center">Request a Custom Project</h2>
 
         <Card className="max-w-3xl mx-auto">
           <CardHeader>
