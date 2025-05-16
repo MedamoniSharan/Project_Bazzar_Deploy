@@ -62,10 +62,8 @@ export default function ProjectDetail() {
   }, [id, navigate]);
 
   const getImage = (index: number) => {
-    if (!project || project.images.length < 2) return "/placeholder.svg";
-    const base = project.images[index * 2];
-    const base64 = project.images[index * 2 + 1];
-    return `${base},${base64}`;
+    if (!project || !project.images.length) return "/placeholder.svg";
+    return project.images[index] || "/placeholder.svg";
   };
 
   const handlePrevImage = () => {
@@ -118,7 +116,7 @@ export default function ProjectDetail() {
     return <div className="flex items-center justify-center min-h-screen">Project not found.</div>;
   }
 
-  const imageCount = Math.floor(project.images.length / 2);
+  const imageCount = project.images.length;
 
   return (
     <div className="flex flex-col min-h-screen">

@@ -2,16 +2,11 @@ import { Link } from "react-router-dom";
 import { Card, CardContent } from "@/components/ui/card";
 import { FileCode2, Tag } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
-import { Project } from "@/pages"; // Make sure this type is correctly imported
-
-function getBase64Image(images: string[]): string {
-  const prefix = images.find((img) => img.startsWith("data:image"));
-  const data = images.find((img) => !img.startsWith("data:image"));
-  return prefix && data ? `${prefix},${data}` : "/placeholder.svg";
-}
+import { Project } from "@/pages"; // Ensure this is the correct path to your Project type
 
 export function ProjectCard({ project }: { project: Project }) {
-  const imageSrc = getBase64Image(project.images);
+  // Use the first image if available, otherwise fallback to placeholder
+  const imageSrc = project.images?.[0] || "/placeholder.svg";
 
   const discountedPrice =
     project.discountPercentage > 0

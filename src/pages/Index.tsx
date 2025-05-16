@@ -147,9 +147,6 @@ const Index = () => {
     </section>
 
 
-
-
-
         {/* Top Projects */}
         <TopProjects />
 

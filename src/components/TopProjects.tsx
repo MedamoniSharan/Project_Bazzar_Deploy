@@ -109,12 +109,20 @@ function MainProjectCard({ project }: { project: Project }) {
     ? project.price - (project.price * project.discountPercentage) / 100
     : null;
 
-  const imageSrc = getValidBase64Image(project.images);
+  const imageSrc = project.images?.[0] || "/placeholder.svg";
 
   return (
     <Card className="overflow-hidden h-full flex flex-col project-card">
       <div className="relative h-80">
-        <img src={imageSrc} alt={project.title} className="w-full h-full object-cover" />
+        <img
+          src={imageSrc}
+          alt={project.title}
+          className="w-full h-full object-cover"
+          referrerPolicy="no-referrer"
+          onError={(e) => {
+            e.currentTarget.src = "/placeholder.svg";
+          }}
+        />
         {project.discountPercentage > 0 && (
           <div className="absolute top-4 right-4 bg-accent text-accent-foreground font-semibold rounded-full px-3 py-1">
             {project.discountPercentage}% OFF
@@ -140,7 +148,7 @@ function MainProjectCard({ project }: { project: Project }) {
               <div className="flex items-center gap-2">
                 <span className="text-xl"> ₹{discountedPrice.toFixed(2)}</span>
                 <span className="text-muted-foreground line-through">
-                ₹{project.price.toFixed(2)}
+                  ₹{project.price.toFixed(2)}
                 </span>
               </div>
             ) : (
@@ -167,7 +175,7 @@ function SideProjectCard({
     ? project.price - (project.price * project.discountPercentage) / 100
     : null;
 
-  const imageSrc = getValidBase64Image(project.images);
+  const imageSrc = project.images?.[0] || "/placeholder.svg";
 
   return (
     <Card
@@ -175,7 +183,14 @@ function SideProjectCard({
       onClick={onClick}
     >
       <div className="w-1/3">
-        <img src={imageSrc} alt={project.title} className="w-full h-full object-cover" />
+        <img
+          src={imageSrc}
+          alt={project.title}
+          className="w-full h-full object-cover"
+          onError={(e) => {
+            e.currentTarget.src = "/placeholder.svg";
+          }}
+        />
       </div>
       <CardContent className="w-2/3 p-4 flex flex-col">
         <h3 className="font-bold mb-1">{project.title}</h3>
@@ -201,7 +216,7 @@ function SideProjectCard({
               <div className="flex items-center gap-1">
                 <span> ₹{discountedPrice.toFixed(2)}</span>
                 <span className="text-muted-foreground line-through text-xs">
-                ₹{project.price.toFixed(2)}
+                  ₹{project.price.toFixed(2)}
                 </span>
               </div>
             ) : (
@@ -212,27 +227,4 @@ function SideProjectCard({
       </CardContent>
     </Card>
   );
-}
-
-// ✅ Helper function to fix base64 image issues
-function getValidBase64Image(images: string[]): string {
-  if (!images || images.length === 0) return "/placeholder.svg";
-
-  // Case: ["data:image/jpeg;base64", "/9j..."]
-  if (
-    images.length >= 2 &&
-    images[0].startsWith("data:image/") &&
-    !images[0].includes(",") &&
-    !images[1].startsWith("data:")
-  ) {
-    return `${images[0]},${images[1]}`;
-  }
-
-  // Case: already full base64
-  if (images[0].startsWith("data:image/") && images[0].includes(",")) {
-    return images[0];
-  }
-
-  // Case: only base64 without prefix
-  return `data:image/jpeg;base64,${images[0]}`;
 }
