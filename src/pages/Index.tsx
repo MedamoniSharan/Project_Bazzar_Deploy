@@ -1,6 +1,5 @@
 import { useState, useEffect } from "react";
 import axios from "axios";
-import { GridLoader } from "react-spinners";
 
 import { Header } from "@/components/Header";
 import { TopProjects } from "@/components/TopProjects";
@@ -40,8 +39,8 @@ const Index = () => {
 
   const [projects, setProjects] = useState<Project[]>([]);
   const [filteredProjects, setFilteredProjects] = useState<Project[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
 
+  // Fetch all projects from backend
   useEffect(() => {
     const fetchProjects = async () => {
       try {
@@ -49,13 +48,12 @@ const Index = () => {
         setProjects(res.data);
       } catch (error) {
         console.error("❌ Failed to fetch projects:", error);
-      } finally {
-        setIsLoading(false);
       }
     };
     fetchProjects();
   }, []);
 
+  // Apply filters
   useEffect(() => {
     const filtered = projects.filter((project) => {
       const matchesPrice =
@@ -104,21 +102,16 @@ const Index = () => {
           </div>
         </section>
 
+        {/* Top Projects */}
         <TopProjects />
 
+        {/* Filter and Project Grid */}
         <div className="container">
           <ProjectFilter onFilterChange={handleFilterChange} />
 
           <div className="mb-16">
-            <h2 className="text-2xl font-bold mb-6">
-              Projects ({filteredProjects.length})
-            </h2>
-
-            {isLoading ? (
-              <div className="flex justify-center items-center py-20">
-                <GridLoader color="#6366F1" size={15} />
-              </div>
-            ) : filteredProjects.length > 0 ? (
+            <h2 className="text-2xl font-bold mb-6">Projects ({filteredProjects.length})</h2>
+            {filteredProjects.length > 0 ? (
               <div className="grid gap-6 grid-cols-1 md:grid-cols-2 lg:grid-cols-3">
                 {filteredProjects.map((project) => (
                   <ProjectCard key={project._id} project={project} />
@@ -134,6 +127,7 @@ const Index = () => {
           </div>
         </div>
 
+        {/* Tech Stack and Contact */}
         <TechStackSlider />
         <StatsSection />
         <ContactForm />

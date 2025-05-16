@@ -6,6 +6,7 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { useToast } from "@/components/ui/use-toast";
 import { Loader2 } from "lucide-react"; // add this icon import at the top
+import { GradualSpacing } from "./GradualSpacing";
 
 
 
@@ -52,34 +53,6 @@ export function ContactForm() {
     }));
   };
 
-  // const handleSubmit = async (e: React.FormEvent) => {
-  //   e.preventDefault();
-
-  //   const payload = new FormData();
-  //   Object.entries(formData).forEach(([key, value]) => payload.append(key, value));
-  //   files.images.forEach((file) => payload.append("images", file));
-  //   files.documents.forEach((file) => payload.append("documents", file));
-
-  //   try {
-  //     const response = await fetch("http://localhost:3000/send-email", {
-  //       method: "POST",
-  //       body: payload,
-  //     });
-
-  //     const data = await response.json();
-
-  //     if (response.ok) {
-  //       toast({ title: "Success", description: data.message });
-  //       setFormData({ name: "", email: "", phone: "", projectName: "", description: "" });
-  //       setFiles({ images: [], documents: [] });
-  //     } else {
-  //       toast({ title: "Error", description: data.message });
-  //     }
-  //   } catch (error) {
-  //     toast({ title: "Error", description: "Failed to send email." });
-  //   }
-  // };
-
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
@@ -115,7 +88,9 @@ export function ContactForm() {
   return (
     <section className="py-12" id="contact">
       <div className="container">
-        <h2 className="text-3xl font-bold mb-8 text-center">Request a Custom Project</h2>
+      <div className="mb-8 text-center">
+    <GradualSpacing text="Request a Custom Project" />
+  </div>
 
         <Card className="max-w-3xl mx-auto">
           <CardHeader>

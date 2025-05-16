@@ -103,17 +103,6 @@ export function Header() {
           </nav>
         </div>
       )}
-      
-      <div className="container flex overflow-hidden py-2 bg-accent text-accent-foreground">
-        <div className="flex w-full animate-slide-left gap-4 text-sm font-semibold">
-          <div className="flex shrink-0 items-center gap-2">
-            <span className="discount-badge px-2 py-1 rounded-md">STUDENT OFFER: 10% DISCOUNT with code 444555</span>
-          </div>
-          <div className="flex shrink-0 items-center gap-2">
-            <span className="discount-badge px-2 py-1 rounded-md">STUDENT OFFER: 10% DISCOUNT with code 444555</span>
-          </div>
-        </div>
-      </div>
     </header>
   );
 }
