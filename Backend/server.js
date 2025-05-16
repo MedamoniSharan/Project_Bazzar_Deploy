@@ -16,11 +16,13 @@ app.use(express.json());
 app.use(cors());
 
 
-// We don’t need express.json() or urlencoded() for multipart/form-data
-// Only keep them if you also support application/json requests elsewhere
-
-// Multer setup for file parsing
-const upload = multer({ storage: multer.memoryStorage() }); // stores files in memory
+const upload = multer({
+  storage: multer.memoryStorage(),
+  limits: {
+    fileSize: 10 * 1024 * 1024, // 10 MB
+    files: 10,
+  },
+});
 
 // DB Connection
 mongoose
