@@ -1,5 +1,5 @@
-import { useState, useEffect } from "react";
-import { useParams, useNavigate } from "react-router-dom";
+import { useEffect, useState } from "react";
+import { useNavigate, useParams } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import {
   Card,
@@ -18,6 +18,8 @@ import { ChevronLeft, ChevronRight, ShoppingCart } from "lucide-react";
 import { Header } from "@/components/Header";
 import { Footer } from "@/components/Footer";
 import { useToast } from "@/components/ui/use-toast";
+import Lottie from "lottie-react";
+import loaderAnimation from "./infinite-loader.json";
 
 interface Project {
   _id: string;
@@ -28,8 +30,8 @@ interface Project {
   discountPercentage: number;
   techStack: string[];
   images: string[];
-  features : string;
-  support : string;
+  features: string;
+  support: string;
 }
 
 export default function ProjectDetail() {
@@ -41,6 +43,7 @@ export default function ProjectDetail() {
   const [activeImage, setActiveImage] = useState(0);
   const [promoCode, setPromoCode] = useState("");
   const [discount, setDiscount] = useState<number | null>(null);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     const fetchProject = async () => {
@@ -51,6 +54,8 @@ export default function ProjectDetail() {
         if (data.discountPercentage) setDiscount(data.discountPercentage);
       } catch (error) {
         navigate("/");
+      } finally {
+        setLoading(false);
       }
     };
     if (id) fetchProject();
@@ -97,14 +102,20 @@ export default function ProjectDetail() {
 
   const calculatePrice = () => {
     if (!project) return "0.00";
-    const price = discount
-      ? project.price - (project.price * discount) / 100
-      : project.price;
+    const price = discount ? project.price - (project.price * discount) / 100 : project.price;
     return price.toFixed(2);
   };
 
+  if (loading) {
+    return (
+      <div className="flex justify-center items-center min-h-screen">
+        <Lottie animationData={loaderAnimation} loop className="w-40 h-40" />
+      </div>
+    );
+  }
+
   if (!project) {
-    return <div className="flex items-center justify-center min-h-screen">Loading...</div>;
+    return <div className="flex items-center justify-center min-h-screen">Project not found.</div>;
   }
 
   const imageCount = Math.floor(project.images.length / 2);
@@ -113,7 +124,7 @@ export default function ProjectDetail() {
     <div className="flex flex-col min-h-screen">
       <Header />
       <main className="flex-1 container py-8">
-        <Button variant="ghost" className="mb-6" onClick={() => navigate("/")}> 
+        <Button variant="ghost" className="mb-6" onClick={() => navigate("/")}>
           <ChevronLeft className="mr-2 h-4 w-4" /> Back to Projects
         </Button>
 
@@ -238,7 +249,7 @@ export default function ProjectDetail() {
                 <CardTitle>Support Information</CardTitle>
               </CardHeader>
               <CardContent>
-               <p>{project.support}</p>
+                <p>{project.support}</p>
               </CardContent>
             </Card>
           </TabsContent>
