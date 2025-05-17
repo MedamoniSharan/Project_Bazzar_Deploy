@@ -58,7 +58,7 @@ app.post("/send-email", upload.fields([
 
   console.log("Received fields:", req.body);
   console.log("Received files:", req.files);
-  const mymail="siddapuramsaimaneeswar@gmail.com"
+  const mymail="studentprojectbazaar@gmail.com"
   const mailOptions = {
     from: '"Contact Form" <mychatswebsite@gmail.com>',
     to: mymail,
