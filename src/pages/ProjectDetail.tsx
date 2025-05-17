@@ -30,6 +30,7 @@ interface Project {
   discountPercentage: number;
   techStack: string[];
   images: string[];
+  videos: string[];
   features: string;
   support: string;
 }
@@ -64,6 +65,11 @@ export default function ProjectDetail() {
   const getImage = (index: number) => {
     if (!project || !project.images.length) return "/placeholder.svg";
     return project.images[index] || "/placeholder.svg";
+  };
+
+  const getYouTubeEmbedUrl = (url: string) => {
+    const match = url.match(/(?:youtu\.be\/|youtube\.com\/(?:watch\?v=|embed\/))([\w-]{11})/);
+    return match ? `https://www.youtube.com/embed/${match[1]}` : null;
   };
 
   const handlePrevImage = () => {
@@ -252,6 +258,27 @@ export default function ProjectDetail() {
             </Card>
           </TabsContent>
         </Tabs>
+
+        {project.videos && project.videos.length > 0 && (
+          <div className="mt-12">
+            <Card>
+              <CardHeader>
+                <CardTitle>Demo Video</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="aspect-video rounded overflow-hidden">
+                  <iframe
+                    src={getYouTubeEmbedUrl(project.videos[0]) || ""}
+                    title="YouTube Video"
+                    allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                    allowFullScreen
+                    className="w-full h-full"
+                  ></iframe>
+                </div>
+              </CardContent>
+            </Card>
+          </div>
+        )}
       </main>
       <Footer />
     </div>
