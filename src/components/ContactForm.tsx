@@ -64,7 +64,7 @@ export function ContactForm() {
     files.documents.forEach((file) => payload.append("documents", file));
   
     try {
-      const response = await fetch("http://localhost:3000/send-email", {
+      const response = await fetch("https://project-palace-paradise.onrender.com/send-email", {
         method: "POST",
         body: payload,
       });

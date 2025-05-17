@@ -48,11 +48,6 @@ export function Header() {
               </Button>
             ) : (
               <Dialog>
-                <DialogTrigger asChild>
-                  <Button variant="default" size="sm">
-                    Sign In
-                  </Button>
-                </DialogTrigger>
                 <DialogContent>
                   <LoginForm />
                 </DialogContent>
