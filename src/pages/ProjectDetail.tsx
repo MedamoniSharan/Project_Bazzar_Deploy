@@ -233,7 +233,14 @@ export default function ProjectDetail() {
                 <CardTitle>Project Description</CardTitle>
               </CardHeader>
               <CardContent>
-                <p>{project.description}</p>
+              {project.description
+                .replace(/\n+/g, "\n") // collapse multiple line breaks
+                .split("\n")
+                .map((line, idx) => (
+                  <p key={idx} className="mb-2">{line}</p>
+              ))}
+
+
               </CardContent>
             </Card>
           </TabsContent>
@@ -243,7 +250,16 @@ export default function ProjectDetail() {
                 <CardTitle>Key Features</CardTitle>
               </CardHeader>
               <CardContent>
-                <p>{project.features}</p>
+              <ul className="list-disc list-inside space-y-2">
+                {project.features
+                  .replace(/\n+/g, "\n")
+                  .split("\n")
+                  .map((feature, idx) => (
+                    <li key={idx}>{feature}</li>
+                  ))}
+              </ul>
+
+
               </CardContent>
             </Card>
           </TabsContent>
@@ -253,7 +269,16 @@ export default function ProjectDetail() {
                 <CardTitle>Support Information</CardTitle>
               </CardHeader>
               <CardContent>
-                <p>{project.support}</p>
+              <ul className="list-disc list-inside space-y-2">
+                {project.support
+                  .replace(/\n+/g, "\n")
+                  .split("\n")
+                  .map((point, idx) => (
+                    <li key={idx}>{point}</li>
+                  ))}
+              </ul>
+
+
               </CardContent>
             </Card>
           </TabsContent>
