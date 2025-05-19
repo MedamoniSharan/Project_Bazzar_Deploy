@@ -45,6 +45,7 @@ export default function ProjectDetail() {
   const [promoCode, setPromoCode] = useState("");
   const [discount, setDiscount] = useState<number | null>(null);
   const [loading, setLoading] = useState(true);
+  const [isPaying, setIsPaying] = useState(false);
 
   useEffect(() => {
     const fetchProject = async () => {
@@ -96,19 +97,67 @@ export default function ProjectDetail() {
     }
   };
 
-  const handleBuyNow = () => {
-    toast({
-      title: "Purchase Successful!",
-      description: `You bought ${project?.title}`,
-    });
-    setTimeout(() => navigate("/"), 2000);
-  };
-
   const calculatePrice = () => {
     if (!project) return "0.00";
     const price = discount ? project.price - (project.price * discount) / 100 : project.price;
     return price.toFixed(2);
   };
+
+  const handleBuyNow = async () => {
+    if (!project) return;
+  
+    setIsPaying(true);
+    const finalAmount = parseFloat(calculatePrice());
+  
+    try {
+      const response = await fetch("http://localhost:3000/api/payments/create-order", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ amount: finalAmount }),
+      });
+  
+      const data = await response.json();
+  
+      if (!data.id) throw new Error("Order creation failed");
+  
+      const options = {
+        key: "rzp_live_WBNb9cCApSSirD", // Replace with your real Razorpay Key ID
+        amount: data.amount,
+        currency: "INR",
+        name: "Project Palace",
+        description: project.title,
+        order_id: data.id,
+        handler: function (response: any) {
+          toast({
+            title: "Payment Successful 🎉",
+            description: `Payment ID: ${response.razorpay_payment_id}`,
+          });
+          setTimeout(() => navigate("/"), 2000);
+        },
+        prefill: {
+          name: "Customer",
+          email: "customer@example.com",
+          contact: "9999999999",
+        },
+        theme: {
+          color: "#000000",
+        },
+      };
+  
+      const rzp = new (window as any).Razorpay(options);
+      rzp.open();
+    } catch (error) {
+      console.error(error);
+      toast({
+        title: "Payment Error",
+        description: "Something went wrong. Try again.",
+        variant: "destructive",
+      });
+    } finally {
+      setIsPaying(false);
+    }
+  };
+  
 
   if (loading) {
     return (
@@ -133,56 +182,32 @@ export default function ProjectDetail() {
         </Button>
 
         <div className="grid md:grid-cols-2 gap-8">
+          {/* IMAGE PREVIEW */}
           <div>
             <div className="relative aspect-video overflow-hidden rounded-lg bg-secondary/30">
-              <img
-                src={getImage(activeImage)}
-                alt={`Preview ${activeImage + 1}`}
-                className="w-full h-full object-cover"
-              />
-              <Button
-                variant="outline"
-                size="icon"
-                className="absolute left-4 top-1/2 -translate-y-1/2 z-10"
-                onClick={handlePrevImage}
-              >
+              <img src={getImage(activeImage)} alt={`Preview ${activeImage + 1}`} className="w-full h-full object-cover" />
+              <Button variant="outline" size="icon" className="absolute left-4 top-1/2 -translate-y-1/2 z-10" onClick={handlePrevImage}>
                 <ChevronLeft className="h-6 w-6" />
               </Button>
-              <Button
-                variant="outline"
-                size="icon"
-                className="absolute right-4 top-1/2 -translate-y-1/2 z-10"
-                onClick={handleNextImage}
-              >
+              <Button variant="outline" size="icon" className="absolute right-4 top-1/2 -translate-y-1/2 z-10" onClick={handleNextImage}>
                 <ChevronRight className="h-6 w-6" />
               </Button>
             </div>
             <div className="flex gap-2 mt-4 overflow-x-auto py-2">
               {[...Array(imageCount)].map((_, index) => (
-                <div
-                  key={index}
-                  onClick={() => setActiveImage(index)}
-                  className={`cursor-pointer w-24 h-16 border-2 rounded overflow-hidden flex-shrink-0 ${
-                    activeImage === index ? "border-primary" : "border-transparent"
-                  }`}
-                >
-                  <img
-                    src={getImage(index)}
-                    className="w-full h-full object-cover"
-                    alt={`Thumbnail ${index + 1}`}
-                  />
+                <div key={index} onClick={() => setActiveImage(index)} className={`cursor-pointer w-24 h-16 border-2 rounded overflow-hidden flex-shrink-0 ${activeImage === index ? "border-primary" : "border-transparent"}`}>
+                  <img src={getImage(index)} className="w-full h-full object-cover" alt={`Thumbnail ${index + 1}`} />
                 </div>
               ))}
             </div>
           </div>
 
+          {/* PROJECT DETAILS */}
           <div>
             <h1 className="text-3xl font-bold">{project.title}</h1>
             <div className="flex flex-wrap gap-2 my-4">
               {project.techStack.map((tech) => (
-                <span key={tech} className="bg-secondary px-3 py-1 rounded-full text-sm">
-                  {tech}
-                </span>
+                <span key={tech} className="bg-secondary px-3 py-1 rounded-full text-sm">{tech}</span>
               ))}
             </div>
             <Separator className="my-4" />
@@ -190,14 +215,10 @@ export default function ProjectDetail() {
             <div className="flex items-baseline gap-2">
               <span className="text-3xl font-bold">₹{calculatePrice()}</span>
               {discount && (
-                <span className="text-xl line-through text-muted-foreground">
-                  ₹{project.price.toFixed(2)}
-                </span>
-              )}
-              {discount && (
-                <span className="bg-accent px-3 py-1 rounded-full text-sm">
-                  {discount}% OFF
-                </span>
+                <>
+                  <span className="text-xl line-through text-muted-foreground">₹{project.price.toFixed(2)}</span>
+                  <span className="bg-accent px-3 py-1 rounded-full text-sm">{discount}% OFF</span>
+                </>
               )}
             </div>
             <div className="flex items-center gap-2 mt-4">
@@ -208,19 +229,18 @@ export default function ProjectDetail() {
                 placeholder="Enter promo code"
                 className="px-3 py-2 border rounded-md text-sm w-40"
               />
-              <Button variant="outline" onClick={handleApplyPromoCode}>
-                Apply
-              </Button>
+              <Button variant="outline" onClick={handleApplyPromoCode}>Apply</Button>
             </div>
             <div className="text-sm mt-2 text-green-600">
               STUDENT OFFER: 10% DISCOUNT with code 444555
             </div>
-            <Button size="lg" className="mt-6 w-full" onClick={handleBuyNow}>
-              <ShoppingCart className="mr-2 h-5 w-5" /> Buy Now
+            <Button size="lg" className="mt-6 w-full" onClick={handleBuyNow} disabled={isPaying}>
+              {isPaying ? "Processing..." : <><ShoppingCart className="mr-2 h-5 w-5" /> Buy Now</>}
             </Button>
           </div>
         </div>
 
+        {/* TABS */}
         <Tabs defaultValue="description" className="mt-12">
           <TabsList className="grid w-full grid-cols-3">
             <TabsTrigger value="description">Description</TabsTrigger>
@@ -229,67 +249,46 @@ export default function ProjectDetail() {
           </TabsList>
           <TabsContent value="description">
             <Card className="mt-4">
-              <CardHeader>
-                <CardTitle>Project Description</CardTitle>
-              </CardHeader>
+              <CardHeader><CardTitle>Project Description</CardTitle></CardHeader>
               <CardContent>
-              {project.description
-                .replace(/\n+/g, "\n") // collapse multiple line breaks
-                .split("\n")
-                .map((line, idx) => (
-                  <p key={idx} className="mb-2">{line}</p>
-              ))}
-
-
+                {project.description
+                  .replace(/\n+/g, "\n")
+                  .split("\n")
+                  .map((line, idx) => <p key={idx} className="mb-2">{line}</p>)}
               </CardContent>
             </Card>
           </TabsContent>
           <TabsContent value="features">
             <Card className="mt-4">
-              <CardHeader>
-                <CardTitle>Key Features</CardTitle>
-              </CardHeader>
+              <CardHeader><CardTitle>Key Features</CardTitle></CardHeader>
               <CardContent>
-              <ul className="list-disc list-inside space-y-2">
-                {project.features
-                  .replace(/\n+/g, "\n")
-                  .split("\n")
-                  .map((feature, idx) => (
+                <ul className="list-disc list-inside space-y-2">
+                  {project.features.replace(/\n+/g, "\n").split("\n").map((feature, idx) => (
                     <li key={idx}>{feature}</li>
                   ))}
-              </ul>
-
-
+                </ul>
               </CardContent>
             </Card>
           </TabsContent>
           <TabsContent value="support">
             <Card className="mt-4">
-              <CardHeader>
-                <CardTitle>Support Information</CardTitle>
-              </CardHeader>
+              <CardHeader><CardTitle>Support Information</CardTitle></CardHeader>
               <CardContent>
-              <ul className="list-disc list-inside space-y-2">
-                {project.support
-                  .replace(/\n+/g, "\n")
-                  .split("\n")
-                  .map((point, idx) => (
+                <ul className="list-disc list-inside space-y-2">
+                  {project.support.replace(/\n+/g, "\n").split("\n").map((point, idx) => (
                     <li key={idx}>{point}</li>
                   ))}
-              </ul>
-
-
+                </ul>
               </CardContent>
             </Card>
           </TabsContent>
         </Tabs>
 
+        {/* YOUTUBE DEMO */}
         {project.videos && project.videos.length > 0 && (
           <div className="mt-12">
             <Card>
-              <CardHeader>
-                <CardTitle>Demo Video</CardTitle>
-              </CardHeader>
+              <CardHeader><CardTitle>Demo Video</CardTitle></CardHeader>
               <CardContent>
                 <div className="aspect-video rounded overflow-hidden">
                   <iframe
