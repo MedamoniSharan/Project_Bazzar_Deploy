@@ -105,23 +105,23 @@ export default function ProjectDetail() {
 
   const handleBuyNow = async () => {
     if (!project) return;
-  
+
     setIsPaying(true);
     const finalAmount = parseFloat(calculatePrice());
-  
+
     try {
       const response = await fetch("https://project-palace-paradise.onrender.com/api/payments/create-order", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ amount: finalAmount }),
       });
-  
+
       const data = await response.json();
-  
+
       if (!data.id) throw new Error("Order creation failed");
-  
+
       const options = {
-        key: "rzp_live_WBNb9cCApSSirD", // Replace with your real Razorpay Key ID
+        key: "rzp_live_WBNb9cCApSSirD",
         amount: data.amount,
         currency: "INR",
         name: "Project Palace",
@@ -143,7 +143,7 @@ export default function ProjectDetail() {
           color: "#000000",
         },
       };
-  
+
       const rzp = new (window as any).Razorpay(options);
       rzp.open();
     } catch (error) {
@@ -157,7 +157,6 @@ export default function ProjectDetail() {
       setIsPaying(false);
     }
   };
-  
 
   if (loading) {
     return (
@@ -176,26 +175,27 @@ export default function ProjectDetail() {
   return (
     <div className="flex flex-col min-h-screen">
       <Header />
-      <main className="flex-1 container py-8">
+      <main className="flex-1 container px-4 sm:px-6 lg:px-8 py-8">
         <Button variant="ghost" className="mb-6" onClick={() => navigate("/")}>
           <ChevronLeft className="mr-2 h-4 w-4" /> Back to Projects
         </Button>
 
-        <div className="grid md:grid-cols-2 gap-8">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
           {/* IMAGE PREVIEW */}
           <div>
-            <div className="relative aspect-video overflow-hidden rounded-lg bg-secondary/30">
+            <div className="relative w-full aspect-video rounded-lg overflow-hidden bg-secondary/30">
               <img src={getImage(activeImage)} alt={`Preview ${activeImage + 1}`} className="w-full h-full object-cover" />
-              <Button variant="outline" size="icon" className="absolute left-4 top-1/2 -translate-y-1/2 z-10" onClick={handlePrevImage}>
-                <ChevronLeft className="h-6 w-6" />
+              <Button variant="outline" size="icon" className="absolute left-2 top-1/2 -translate-y-1/2 z-10" onClick={handlePrevImage}>
+                <ChevronLeft className="h-5 w-5 sm:h-6 sm:w-6" />
               </Button>
-              <Button variant="outline" size="icon" className="absolute right-4 top-1/2 -translate-y-1/2 z-10" onClick={handleNextImage}>
-                <ChevronRight className="h-6 w-6" />
+              <Button variant="outline" size="icon" className="absolute right-2 top-1/2 -translate-y-1/2 z-10" onClick={handleNextImage}>
+                <ChevronRight className="h-5 w-5 sm:h-6 sm:w-6" />
               </Button>
             </div>
+
             <div className="flex gap-2 mt-4 overflow-x-auto py-2">
               {[...Array(imageCount)].map((_, index) => (
-                <div key={index} onClick={() => setActiveImage(index)} className={`cursor-pointer w-24 h-16 border-2 rounded overflow-hidden flex-shrink-0 ${activeImage === index ? "border-primary" : "border-transparent"}`}>
+                <div key={index} onClick={() => setActiveImage(index)} className={`cursor-pointer w-20 h-14 sm:w-24 sm:h-16 border-2 rounded overflow-hidden flex-shrink-0 ${activeImage === index ? "border-primary" : "border-transparent"}`}>
                   <img src={getImage(index)} className="w-full h-full object-cover" alt={`Thumbnail ${index + 1}`} />
                 </div>
               ))}
@@ -204,36 +204,40 @@ export default function ProjectDetail() {
 
           {/* PROJECT DETAILS */}
           <div>
-            <h1 className="text-3xl font-bold">{project.title}</h1>
+            <h1 className="text-2xl sm:text-3xl font-bold">{project.title}</h1>
             <div className="flex flex-wrap gap-2 my-4">
               {project.techStack.map((tech) => (
                 <span key={tech} className="bg-secondary px-3 py-1 rounded-full text-sm">{tech}</span>
               ))}
             </div>
             <Separator className="my-4" />
-            <div className="text-muted-foreground mb-4">{project.shortDescription}</div>
-            <div className="flex items-baseline gap-2">
-              <span className="text-3xl font-bold">₹{calculatePrice()}</span>
+            <div className="text-muted-foreground mb-4 text-sm sm:text-base">{project.shortDescription}</div>
+            <div className="flex items-baseline gap-2 flex-wrap">
+              <span className="text-2xl sm:text-3xl font-bold">₹{calculatePrice()}</span>
               {discount && (
                 <>
-                  <span className="text-xl line-through text-muted-foreground">₹{project.price.toFixed(2)}</span>
+                  <span className="text-base line-through text-muted-foreground">₹{project.price.toFixed(2)}</span>
                   <span className="bg-accent px-3 py-1 rounded-full text-sm">{discount}% OFF</span>
                 </>
               )}
             </div>
-            <div className="flex items-center gap-2 mt-4">
+
+            <div className="flex flex-col sm:flex-row items-start sm:items-center gap-2 mt-4">
               <input
                 type="text"
                 value={promoCode}
                 onChange={(e) => setPromoCode(e.target.value)}
                 placeholder="Enter promo code"
-                className="px-3 py-2 border rounded-md text-sm w-40"
+                className="px-3 py-2 border rounded-md text-sm w-full sm:w-40"
               />
-              <Button variant="outline" onClick={handleApplyPromoCode}>Apply</Button>
+              <Button variant="outline" className="w-full sm:w-auto" onClick={handleApplyPromoCode}>
+                Apply
+              </Button>
             </div>
             <div className="text-sm mt-2 text-green-600">
               STUDENT OFFER: 10% DISCOUNT with code 444555
             </div>
+
             <Button size="lg" className="mt-6 w-full" onClick={handleBuyNow} disabled={isPaying}>
               {isPaying ? "Processing..." : <><ShoppingCart className="mr-2 h-5 w-5" /> Buy Now</>}
             </Button>
@@ -242,22 +246,23 @@ export default function ProjectDetail() {
 
         {/* TABS */}
         <Tabs defaultValue="description" className="mt-12">
-          <TabsList className="grid w-full grid-cols-3">
+          <TabsList className="grid grid-cols-1 sm:grid-cols-3 gap-2 w-full">
             <TabsTrigger value="description">Description</TabsTrigger>
             <TabsTrigger value="features">Features</TabsTrigger>
             <TabsTrigger value="support">Support</TabsTrigger>
           </TabsList>
+
           <TabsContent value="description">
             <Card className="mt-4">
               <CardHeader><CardTitle>Project Description</CardTitle></CardHeader>
               <CardContent>
-                {project.description
-                  .replace(/\n+/g, "\n")
-                  .split("\n")
-                  .map((line, idx) => <p key={idx} className="mb-2">{line}</p>)}
+                {project.description.replace(/\n+/g, "\n").split("\n").map((line, idx) => (
+                  <p key={idx} className="mb-2">{line}</p>
+                ))}
               </CardContent>
             </Card>
           </TabsContent>
+
           <TabsContent value="features">
             <Card className="mt-4">
               <CardHeader><CardTitle>Key Features</CardTitle></CardHeader>
@@ -270,6 +275,7 @@ export default function ProjectDetail() {
               </CardContent>
             </Card>
           </TabsContent>
+
           <TabsContent value="support">
             <Card className="mt-4">
               <CardHeader><CardTitle>Support Information</CardTitle></CardHeader>
@@ -284,7 +290,7 @@ export default function ProjectDetail() {
           </TabsContent>
         </Tabs>
 
-        {/* YOUTUBE DEMO */}
+        {/* VIDEO */}
         {project.videos && project.videos.length > 0 && (
           <div className="mt-12">
             <Card>
