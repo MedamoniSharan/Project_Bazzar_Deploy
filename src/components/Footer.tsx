@@ -32,8 +32,10 @@ export function Footer() {
               <li><Link to="/terms" className="hover:text-white transition">Terms of Service</Link></li>
               <li><Link to="/privacy" className="hover:text-white transition">Privacy Policy</Link></li>
               <li><Link to="/refund" className="hover:text-white transition">Refund Policy</Link></li>
-              <li><Link to="/license" className="hover:text-white transition">License</Link></li>
+              <li><Link to="/shipping" className="hover:text-white transition">Shipping & Delivery</Link></li>
+              <li><Link to="/contact-us" className="hover:text-white transition"> contact us</Link></li>
             </ul>
+
           </div>
 
           {/* Contact Info */}

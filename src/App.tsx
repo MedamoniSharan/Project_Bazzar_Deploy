@@ -11,6 +11,11 @@ import NotFound from "./pages/NotFound";
 import AdminDashboard from "./pages/AdminDashboard";
 import UserDashboard from "./pages/UserDashboard";
 import LoginPage from "./pages/LoginPage";
+import PrivacyPolicy from "./components/PrivacyPolicy";
+import TermsConditions from "./components/TermsConditions";
+import RefundPolicy from "./components/RefundPolicy";
+import ShippingPolicy from "./components/ShippingPolicy";
+import ContactUs from "./components/ContactUs";
 
 const queryClient = new QueryClient();
 
@@ -30,6 +35,12 @@ const App = () => (
             <Route path="/user" element={<UserDashboard />} />
             <Route path="/ss" element={<LoginPage />} />
             <Route path="*" element={<NotFound />} />
+
+            <Route path="/privacy" element={<PrivacyPolicy />} />
+            <Route path="/terms" element={<TermsConditions />} />
+            <Route path="/refund" element={<RefundPolicy />} />
+            <Route path="/shipping" element={<ShippingPolicy />} />
+            <Route path="/contact-us" element={<ContactUs />} />
           </Routes>
         </BrowserRouter>
       </TooltipProvider>
