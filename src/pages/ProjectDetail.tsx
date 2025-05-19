@@ -110,7 +110,7 @@ export default function ProjectDetail() {
     const finalAmount = parseFloat(calculatePrice());
   
     try {
-      const response = await fetch("http://localhost:3000/api/payments/create-order", {
+      const response = await fetch("https://project-palace-paradise.onrender.com/api/payments/create-order", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ amount: finalAmount }),
