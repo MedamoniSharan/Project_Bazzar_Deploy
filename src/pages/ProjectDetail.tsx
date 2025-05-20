@@ -20,6 +20,7 @@ import { Footer } from "@/components/Footer";
 import { useToast } from "@/components/ui/use-toast";
 import Lottie from "lottie-react";
 import loaderAnimation from "./infinite-loader.json";
+import { useAuth } from "@/context/AuthContext";
 
 interface Project {
   _id: string;
@@ -39,6 +40,8 @@ export default function ProjectDetail() {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
   const { toast } = useToast();
+  const { isAuthenticated } = useAuth();
+
 
   const [project, setProject] = useState<Project | null>(null);
   const [activeImage, setActiveImage] = useState(0);
@@ -157,6 +160,8 @@ export default function ProjectDetail() {
       setIsPaying(false);
     }
   };
+
+
 
   if (loading) {
     return (

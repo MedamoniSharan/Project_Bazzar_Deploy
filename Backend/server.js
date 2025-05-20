@@ -4,28 +4,24 @@ dotenv.config();
 import express from "express";
 import mongoose from "mongoose";
 import cors from "cors";
-import projectRoutes from "./routes/projectRoutes.js";
-import nodemailer from "nodemailer";
 import multer from "multer";
-import paymentRoutes from './routes/paymentRoutes.js';
+import nodemailer from "nodemailer";
+import jwt from "jsonwebtoken";
+import { OAuth2Client } from "google-auth-library";
+import User from "./models/User.js";
 
+
+import projectRoutes from "./routes/projectRoutes.js";
+import paymentRoutes from "./routes/paymentRoutes.js";
 
 const app = express();
 const PORT = process.env.PORT || 3000;
+const client = new OAuth2Client(process.env.GOOGLE_CLIENT_ID); // 👈
 
 app.use(cors());
 app.use(express.json());
-app.use(cors());
 
-const upload = multer({
-  storage: multer.memoryStorage(),
-  limits: {
-    fileSize: 10 * 1024 * 1024, // 10 MB
-    files: 10,
-  },
-});
-
-// DB Connection
+// MongoDB Connection
 mongoose
   .connect(process.env.MONGO_URI, {
     useNewUrlParser: true,
@@ -34,21 +30,55 @@ mongoose
   .then(() => console.log("✅ MongoDB connected"))
   .catch((err) => console.error("❌ MongoDB connection error:", err));
 
-// Routes
-app.use("/api/projects", projectRoutes);
-app.use('/api/payments', paymentRoutes);
-
-
-// Nodemailer setup
-const transporter = nodemailer.createTransport({
-  service: "Gmail",
-  auth: {
-    user: "mychatswebsite@gmail.com",
-    pass: "hion jzxf rccd mchq",
+// Multer (File Upload)
+const upload = multer({
+  storage: multer.memoryStorage(),
+  limits: {
+    fileSize: 10 * 1024 * 1024, // 10 MB
+    files: 10,
   },
 });
 
-// Handle contact form submission with file upload
+// Routes
+app.use("/api/projects", projectRoutes);
+app.use("/api/payments", paymentRoutes);
+
+// ✅ Google OAuth Login Route
+app.post("/api/auth/google", async (req, res) => {
+  const { token } = req.body;
+
+  try {
+    const ticket = await client.verifyIdToken({
+      idToken: token,
+      audience: process.env.GOOGLE_CLIENT_ID,
+    });
+
+    const payload = ticket.getPayload();
+    const { name, email, picture } = payload;
+
+    // 🔍 Check if user exists, else create
+    let user = await User.findOne({ email });
+    if (!user) {
+      user = new User({ name, email, picture });
+      await user.save();
+    }
+
+    // ✅ Generate JWT with user ID
+    const accessToken = jwt.sign(
+      { userId: user._id, email: user.email },
+      process.env.JWT_SECRET,
+      { expiresIn: "1d" }
+    );
+
+    res.json({ token: accessToken, user });
+  } catch (error) {
+    console.error("❌ Google login failed:", error);
+    res.status(401).json({ error: "Invalid Google token" });
+  }
+});
+
+
+// 📧 Nodemailer Email with Attachment
 app.post("/send-email", upload.fields([
   { name: "images", maxCount: 5 },
   { name: "documents", maxCount: 5 },
@@ -59,12 +89,17 @@ app.post("/send-email", upload.fields([
     return res.status(400).json({ message: "Missing required fields" });
   }
 
-  console.log("Received fields:", req.body);
-  console.log("Received files:", req.files);
-  const mymail="studentprojectbazaar@gmail.com"
+  const transporter = nodemailer.createTransport({
+    service: "Gmail",
+    auth: {
+      user: "mychatswebsite@gmail.com",
+      pass: "hion jzxf rccd mchq",
+    },
+  });
+
   const mailOptions = {
     from: '"Contact Form" <mychatswebsite@gmail.com>',
-    to: mymail,
+    to: "studentprojectbazaar@gmail.com",
     subject: `New Project Request from ${name}`,
     text: `
 Full Name: ${name}

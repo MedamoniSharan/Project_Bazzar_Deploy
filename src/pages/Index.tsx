@@ -13,6 +13,8 @@ import StatsSection from "./StatsSection";
 import Lottie from "lottie-react";
 import businessTeam from "./business-team.json";
 import loadingAnimation from "./project-loader.json"; // Add your Lottie loader JSON here
+import { useNavigate } from "react-router-dom";
+import { useAuth } from "@/context/AuthContext";
 
 export interface Project {
   _id: string;
@@ -39,6 +41,9 @@ const Index = () => {
     techStack: [] as string[],
     domain: "all",
   });
+
+  const navigate = useNavigate();
+  const { isAuthenticated } = useAuth(); 
 
   const [projects, setProjects] = useState<Project[]>([]);
   const [filteredProjects, setFilteredProjects] = useState<Project[]>([]);
@@ -85,6 +90,15 @@ const Index = () => {
     setFilters(newFilters);
   };
 
+  const handleBrowseProjects = () => {
+    if (!isAuthenticated) {
+      navigate("/loginuser");
+    } 
+  };
+  
+  
+
+
   return (
     <div className="flex flex-col min-h-screen">
       <Header />
@@ -125,10 +139,10 @@ const Index = () => {
               </p>
 
               <div className="flex justify-center md:justify-start gap-4 pt-4 animate-fade-in-up delay-300">
-                <button className="px-6 py-3 rounded-2xl font-semibold bg-primary text-white hover:bg-primary/90 transition flex items-center gap-2 shadow-lg">
+                <button onClick={handleBrowseProjects} className="px-6 py-3 rounded-2xl font-semibold bg-primary text-white hover:bg-primary/90 transition flex items-center gap-2 shadow-lg">
                   🚀 Get Started
                 </button>
-                <button className="px-6 py-3 rounded-2xl font-semibold border border-primary text-primary hover:bg-primary/10 transition flex items-center gap-2">
+                <button onClick={handleBrowseProjects} className="px-6 py-3 rounded-2xl font-semibold border border-primary text-primary hover:bg-primary/10 transition flex items-center gap-2">
                   📂 Browse Projects
                 </button>
               </div>

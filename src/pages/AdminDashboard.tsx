@@ -26,7 +26,6 @@ import { LayoutDashboard, X } from "lucide-react";
 import * as Dialog from "@radix-ui/react-dialog";
 
 export default function AdminDashboard() {
-  const { isAuthenticated } = useAuth();
   const { toast } = useToast();
 
   const [newProject, setNewProject] = useState({
@@ -79,7 +78,6 @@ export default function AdminDashboard() {
     fetchData();
   }, [toast]);
 
-  if (!isAuthenticated) return <Navigate to="/login" />;
 
   const handleDelete = async (id) => {
     if (!window.confirm("Are you sure you want to delete this project?")) return;

@@ -1,9 +1,10 @@
 import { useEffect, useState } from "react";
-import { Link } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 import axios from "axios";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { ChevronLeft, ChevronRight } from "lucide-react";
+import { useAuth } from "@/context/AuthContext";
 
 // Project Interface
 export interface Project {
@@ -26,6 +27,8 @@ export interface Project {
 }
 
 export function TopProjects() {
+  const { isAuthenticated } = useAuth();
+  const navigate = useNavigate();
   const [projects, setProjects] = useState<Project[]>([]);
   const [activeIndex, setActiveIndex] = useState(0);
 
@@ -43,6 +46,14 @@ export function TopProjects() {
     };
     fetchTopProjects();
   }, []);
+
+  const handleViewDetails = (projectId: string) => {
+    if (!isAuthenticated) {
+      navigate("/loginuser");
+    } else {
+      navigate(`/projects/${projectId}`);
+    }
+  };
 
   const nextSlide = () => {
     setActiveIndex((prev) => (prev === projects.length - 1 ? 0 : prev + 1));
@@ -71,7 +82,10 @@ export function TopProjects() {
 
           <div className="grid md:grid-cols-3 gap-6">
             <div className="md:col-span-2">
-              <MainProjectCard project={projects[activeIndex]} />
+              <MainProjectCard
+                project={projects[activeIndex]}
+                onViewDetails={handleViewDetails}
+              />
             </div>
 
             <div className="space-y-4">
@@ -104,7 +118,13 @@ export function TopProjects() {
   );
 }
 
-function MainProjectCard({ project }: { project: Project }) {
+function MainProjectCard({
+  project,
+  onViewDetails,
+}: {
+  project: Project;
+  onViewDetails: (projectId: string) => void;
+}) {
   const discountedPrice = project.discountPercentage
     ? project.price - (project.price * project.discountPercentage) / 100
     : null;
@@ -155,9 +175,9 @@ function MainProjectCard({ project }: { project: Project }) {
               <span className="text-xl"> ₹{project.price.toFixed(2)}</span>
             )}
           </div>
-          <Link to={`/project/${project._id}`}>
-            <Button>View Details</Button>
-          </Link>
+          <Button onClick={() => onViewDetails(project._id)}>
+            View Details
+          </Button>
         </div>
       </CardContent>
     </Card>

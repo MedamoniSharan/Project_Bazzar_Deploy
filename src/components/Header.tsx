@@ -1,19 +1,15 @@
 import { useState } from "react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { ThemeToggle } from "./ThemeToggle";
 import { Menu, X } from "lucide-react";
-import { LoginForm } from "./LoginForm";
-import {
-  Dialog,
-  DialogContent,
-  DialogTrigger,
-} from "@/components/ui/dialog";
 import { useAuth } from "@/context/AuthContext";
 
 export function Header() {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
-  const { isAuthenticated, logout } = useAuth();
+  const { isAuthenticated, user, logout } = useAuth();
+
+  const navigate = useNavigate();
 
   return (
     <header className="sticky top-0 z-50 w-full border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
@@ -21,7 +17,7 @@ export function Header() {
         <Link to="/" className="flex items-center font-bold text-xl text-primary">
           <span>ProjectBazaar</span>
         </Link>
-        
+
         <div className="hidden md:flex items-center gap-6">
           <nav className="flex items-center gap-6 text-sm font-medium">
             <Link to="/" className="transition-colors hover:text-primary">
@@ -33,29 +29,28 @@ export function Header() {
             <Link to="/purchased" className="transition-colors hover:text-primary">
               Purchased Projects
             </Link>
-            {isAuthenticated && (
-              <Link to="/admin" className="transition-colors hover:text-primary">
-                Admin Dashboard
-              </Link>
-            )}
           </nav>
-          
+
           <div className="flex items-center gap-2">
             <ThemeToggle />
             {isAuthenticated ? (
-              <Button variant="default" size="sm" onClick={logout}>
-                Logout
-              </Button>
+              <div className="flex items-center gap-2">
+                <span className="text-sm font-medium text-gray-700">
+                Hi, {user?.name ? user.name.split(" ")[0] : "User"}
+                </span>
+                <Button variant="default" size="sm" onClick={logout}>
+                  Logout
+                </Button>
+              </div>
             ) : (
-              <Dialog>
-                <DialogContent>
-                  <LoginForm />
-                </DialogContent>
-              </Dialog>
+              <Button variant="default" size="sm" onClick={() => navigate("/loginuser")}>
+                Login
+              </Button>
             )}
+
           </div>
         </div>
-        
+
         <button 
           className="md:hidden" 
           onClick={() => setIsMenuOpen(!isMenuOpen)}
@@ -67,7 +62,7 @@ export function Header() {
           )}
         </button>
       </div>
-      
+
       {isMenuOpen && (
         <div className="container md:hidden py-4 bg-background border-t">
           <nav className="flex flex-col space-y-4 text-sm font-medium">
@@ -92,8 +87,16 @@ export function Header() {
             >
               Purchased Projects
             </Link>
-            <Button variant="default" size="sm" className="w-full">
-              Sign In
+            <Button
+              variant="default"
+              size="sm"
+              className="w-full"
+              onClick={() => {
+                setIsMenuOpen(false);
+                navigate("/loginuser");
+              }}
+            >
+              Login
             </Button>
           </nav>
         </div>
