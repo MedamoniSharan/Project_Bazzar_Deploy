@@ -21,7 +21,7 @@ const LoginUserPage = () => {
 
   const handleGoogleLogin = async (credentialResponse: any) => {
     try {
-      const res = await axios.post("http://localhost:3000/api/auth/google", {
+      const res = await axios.post("https://project-palace-paradise.onrender.com/api/auth/google", {
         token: credentialResponse.credential,
       });
       localStorage.setItem("token", res.data.token);
