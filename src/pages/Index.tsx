@@ -43,11 +43,12 @@ const Index = () => {
   });
 
   const navigate = useNavigate();
-  const { isAuthenticated } = useAuth(); 
+  const { isAuthenticated , user } = useAuth(); 
 
   const [projects, setProjects] = useState<Project[]>([]);
   const [filteredProjects, setFilteredProjects] = useState<Project[]>([]);
   const [loading, setLoading] = useState(true); // 👈 Added loading state
+  const [wishlistIds, setWishlistIds] = useState<string[]>([]);
 
   useEffect(() => {
     const fetchProjects = async () => {
@@ -95,6 +96,19 @@ const Index = () => {
       navigate("/loginuser");
     } 
   };
+
+  useEffect(() => {
+    if (!isAuthenticated || !user?.email) return;
+  
+    axios
+      .get(`http://localhost:3000/api/wishlist/${user.email}`)
+      .then(res => {
+        setWishlistIds(res.data.map((project: any) => project._id));
+      })
+      .catch(err => {
+        console.error("Failed to fetch wishlist", err);
+      });
+  }, [isAuthenticated, user]);
   
   
 
@@ -175,7 +189,7 @@ const Index = () => {
             ) : filteredProjects.length > 0 ? (
               <div className="grid gap-6 grid-cols-1 md:grid-cols-2 lg:grid-cols-3">
                 {filteredProjects.map((project) => (
-                  <ProjectCard key={project._id} project={project} />
+                  <ProjectCard key={project._id} project={project} isFavourite={wishlistIds.includes(project._id)} />
                 ))}
               </div>
             ) : (

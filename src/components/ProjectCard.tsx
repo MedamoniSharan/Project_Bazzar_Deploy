@@ -1,13 +1,21 @@
+import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { Card, CardContent } from "@/components/ui/card";
-import { FileCode2, Tag } from "lucide-react";
+import { FileCode2, Star } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
-import { Project } from "@/pages"; // Update path if needed
+import { Project } from "@/pages"; // Adjust path as needed
 import { useAuth } from "@/context/AuthContext";
+import "../../src/context/styles/star-twinkle.css"; // Custom animation class (see below)
+import axios from "axios";
 
-export function ProjectCard({ project }: { project: Project }) {
+type ExtendedProject = Project & {
+  favourite?: boolean;
+};
+export function ProjectCard({ project, isFavourite }: { project: Project; isFavourite?: boolean }) {
   const navigate = useNavigate();
-  const { isAuthenticated } = useAuth();
+  const { isAuthenticated , user} = useAuth();
+  const [isFav, setIsFav] = useState(isFavourite || false);
+  const [twinkle, setTwinkle] = useState(false);
 
   const imageSrc = project.images?.[0] || "/placeholder.svg";
 
@@ -24,11 +32,27 @@ export function ProjectCard({ project }: { project: Project }) {
     }
   };
 
+  const toggleFavourite = async (e: React.MouseEvent) => {
+    e.stopPropagation();
+    if (!user?.email) return;
+  
+    try {
+      const res = await axios.post("http://localhost:3000/api/wishlist/toggle", {
+        email: user.email,
+        projectId: project._id,
+      });
+  
+      setIsFav(res.data.status === "added");
+      setTwinkle(true);
+      setTimeout(() => setTwinkle(false), 500);
+    } catch (error) {
+      console.error("Toggle wishlist failed", error);
+    }
+  };
+  
+
   return (
-    <div
-      onClick={handleCardClick}
-      className="cursor-pointer"
-    >
+    <div onClick={handleCardClick} className="cursor-pointer">
       <Card className="overflow-hidden h-full group hover:shadow-xl transition-all duration-300 bg-card">
         <div className="relative h-48">
           <img
@@ -45,7 +69,9 @@ export function ProjectCard({ project }: { project: Project }) {
             </div>
           )}
           <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/70 to-transparent p-4">
-            <h3 className="font-bold text-white text-lg line-clamp-1">{project.title}</h3>
+            <h3 className="font-bold text-white text-lg line-clamp-1">
+              {project.title}
+            </h3>
           </div>
         </div>
 
@@ -81,7 +107,19 @@ export function ProjectCard({ project }: { project: Project }) {
                   <span className="text-xl font-bold">₹{project.price}</span>
                 )}
               </div>
-              <Tag className="h-5 w-5 text-muted-foreground" />
+
+              {/* ⭐ Favourite Toggle */}
+              <button
+                onClick={toggleFavourite}
+                className={`transition transform ${twinkle ? "twinkle" : ""}`}
+                title="Add to Favourites"
+              >
+                <Star
+                  className={`h-5 w-5 ${
+                    isFav ? "fill-yellow-400 text-yellow-400" : "text-black"
+                  }`}
+                />
+              </button>
             </div>
           </div>
         </CardContent>

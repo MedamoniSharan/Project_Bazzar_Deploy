@@ -98,4 +98,19 @@ router.delete("/:id", async (req, res) => {
   }
 });
 
+// Toggle favourite status
+router.post("/:id/toggle-favourite", async (req, res) => {
+  try {
+    const project = await Project.findById(req.params.id);
+    if (!project) return res.status(404).json({ message: "Project not found" });
+
+    project.favourite = !project.favourite;
+    await project.save();
+    res.json({ favourite: project.favourite });
+  } catch (error) {
+    console.error("Error toggling favourite:", error);
+    res.status(500).json({ message: "Failed to toggle favourite status" });
+  }
+});
+
 export default router;
