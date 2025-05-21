@@ -16,7 +16,7 @@ interface ProjectFilterProps {
 }
 
 export function ProjectFilter({ onFilterChange }: ProjectFilterProps) {
-  const [priceRange, setPriceRange] = useState({ min: 0, max: 1000 });
+  const [priceRange, setPriceRange] = useState({ min: 0, max: 5000 });
   const [techStack, setTechStack] = useState<string[]>([]);
   const [domain, setDomain] = useState("all");
 
