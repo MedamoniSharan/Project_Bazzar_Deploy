@@ -37,7 +37,7 @@ export function ProjectCard({ project, isFavourite }: { project: Project; isFavo
     if (!user?.email) return;
   
     try {
-      const res = await axios.post("http://localhost:3000/api/wishlist/toggle", {
+      const res = await axios.post("https://project-palace-paradise.onrender.com/api/wishlist/toggle", {
         email: user.email,
         projectId: project._id,
       });

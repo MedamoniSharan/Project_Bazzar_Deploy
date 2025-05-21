@@ -29,7 +29,7 @@ export default function WishlistPage() {
 
     setLoading(true);
     axios
-      .get(`http://localhost:3000/api/wishlist/${user.email}`)
+      .get(`https://project-palace-paradise.onrender.com/api/wishlist/${user.email}`)
       .then((res) => {
         setWishlistProjects(res.data);
       })

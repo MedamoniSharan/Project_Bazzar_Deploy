@@ -101,7 +101,7 @@ const Index = () => {
     if (!isAuthenticated || !user?.email) return;
   
     axios
-      .get(`http://localhost:3000/api/wishlist/${user.email}`)
+      .get(`https://project-palace-paradise.onrender.com/api/wishlist/${user.email}`)
       .then(res => {
         setWishlistIds(res.data.map((project: any) => project._id));
       })
