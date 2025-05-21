@@ -30,9 +30,12 @@ export default function PurchasedProjects() {
   const [purchasedProjects, setPurchasedProjects] = useState<Purchased[]>([]);
   const [loading, setLoading] = useState(true);
   const navigate = useNavigate();
-  const { isAuthenticated, user } = useAuth();
+  const { isAuthenticated, user, loading: authLoading } = useAuth();
 
   useEffect(() => {
+
+    if (authLoading) return;
+     
     if (!isAuthenticated || !user?.email) {
       navigate("/loginuser");
       return;
