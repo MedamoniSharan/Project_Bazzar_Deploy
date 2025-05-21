@@ -57,6 +57,10 @@ export default function AdminDashboard() {
   const [loading, setLoading] = useState(true);
   const [imageUrls, setImageUrls] = useState("");
   const [videoUrls, setVideoUrls] = useState("");
+  const [mappings, setMappings] = useState([]);
+  const [selectedProjectId, setSelectedProjectId] = useState("");
+  const [mappingUrl, setMappingUrl] = useState("");
+  const [editingMappingId, setEditingMappingId] = useState(null);
 
   useEffect(() => {
     const fetchData = async () => {
@@ -137,6 +141,67 @@ export default function AdminDashboard() {
     }
   };
 
+  useEffect(() => {
+    const fetchMappings = async () => {
+      try {
+        const res = await fetch("https://project-palace-paradise.onrender.com/api/mappings");
+        const data = await res.json();
+        setMappings(data);
+      } catch (err) {
+        toast({ title: "Error", description: "Failed to fetch mappings", variant: "destructive" });
+      }
+    };
+    fetchMappings();
+  }, [toast]);
+
+
+    const handleMappingSave = async () => {
+      try {
+        const selectedProject = projects.find((p) => p._id === selectedProjectId);
+        if (!selectedProject) throw new Error("Project not found");
+  
+        const method = editingMappingId ? "PUT" : "POST";
+        const url = editingMappingId
+          ? `https://project-palace-paradise.onrender.com/api/mappings/${editingMappingId}`
+          : "https://project-palace-paradise.onrender.com/api/mappings";
+  
+        const res = await fetch(url, {
+          method,
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            projectId: selectedProjectId,
+            projectTitle: selectedProject.title,
+            url: mappingUrl,
+          }),
+        });
+  
+        const result = await res.json();
+        if (editingMappingId) {
+          setMappings((prev) => prev.map((m) => (m._id === editingMappingId ? result : m)));
+        } else {
+          setMappings((prev) => [result, ...prev]);
+        }
+  
+        setSelectedProjectId("");
+        setMappingUrl("");
+        setEditingMappingId(null);
+        toast({ title: "Success", description: "Mapping saved successfully" });
+      } catch (err) {
+        toast({ title: "Error", description: err.message, variant: "destructive" });
+      }
+    };
+  
+
+    const handleMappingDelete = async (id) => {
+      try {
+        await fetch(`https://project-palace-paradise.onrender.com/api/mappings/${id}`, { method: "DELETE" });
+        setMappings((prev) => prev.filter((m) => m._id !== id));
+        toast({ title: "Deleted", description: "Mapping deleted successfully" });
+      } catch (err) {
+        toast({ title: "Error", description: err.message, variant: "destructive" });
+      }
+    };
+
   const ProjectForm = (
     <form onSubmit={handleSubmit} className="grid gap-4">
       <div className="grid gap-2">
@@ -210,6 +275,7 @@ export default function AdminDashboard() {
         <TabsList className="mb-6">
           <TabsTrigger value="projects">Manage Projects</TabsTrigger>
           <TabsTrigger value="add">Add Project</TabsTrigger>
+          <TabsTrigger value="mappings">Mappings</TabsTrigger>
         </TabsList>
 
         <TabsContent value="projects">
@@ -260,6 +326,57 @@ export default function AdminDashboard() {
               <CardDescription>Fill out the project details below.</CardDescription>
             </CardHeader>
             <CardContent>{ProjectForm}</CardContent>
+          </Card>
+        </TabsContent>
+
+        <TabsContent value="mappings">
+          <Card>
+            <CardHeader><CardTitle>Project Mappings</CardTitle></CardHeader>
+            <CardContent>
+              <select
+                value={selectedProjectId}
+                onChange={(e) => setSelectedProjectId(e.target.value)}
+              >
+                <option value="">-- Select Project --</option>
+                {projects.map((p) => (
+                  <option key={p._id} value={p._id}>{p.title}</option>
+                ))}
+              </select>
+              <Input
+                value={mappingUrl}
+                onChange={(e) => setMappingUrl(e.target.value)}
+                placeholder="Enter URL"
+                className="my-2"
+              />
+              <Button onClick={handleMappingSave}>{editingMappingId ? "Update" : "Save"}</Button>
+              <Table className="mt-4">
+                <TableHeader>
+                  <TableRow>
+                    <TableHead>Project Title</TableHead>
+                    <TableHead>URL</TableHead>
+                    <TableHead>Actions</TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {mappings.map((m) => (
+                    <TableRow key={m._id}>
+                      <TableCell>{m.projectTitle}</TableCell>
+                      <TableCell>{m.url}</TableCell>
+                      <TableCell>
+                        <Button
+                          onClick={() => {
+                            setSelectedProjectId(m.projectId);
+                            setMappingUrl(m.url);
+                            setEditingMappingId(m._id);
+                          }}
+                        >Edit</Button>
+                        <Button variant="destructive" onClick={() => handleMappingDelete(m._id)}>Delete</Button>
+                      </TableCell>
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </Table>
+            </CardContent>
           </Card>
         </TabsContent>
       </Tabs>

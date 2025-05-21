@@ -13,6 +13,7 @@ import User from "./models/User.js";
 
 import projectRoutes from "./routes/projectRoutes.js";
 import paymentRoutes from "./routes/paymentRoutes.js";
+import mappingRoutes from "./routes/mappingRoutes.js";
 
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -42,6 +43,7 @@ const upload = multer({
 // Routes
 app.use("/api/projects", projectRoutes);
 app.use("/api/payments", paymentRoutes);
+app.use("/api/mappings", mappingRoutes);
 
 // ✅ Google OAuth Login Route
 app.post("/api/auth/google", async (req, res) => {
