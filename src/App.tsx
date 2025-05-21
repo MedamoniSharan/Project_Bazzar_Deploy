@@ -11,7 +11,6 @@ import ProjectDetail from "./pages/ProjectDetail";
 import NotFound from "./pages/NotFound";
 import AdminDashboard from "./pages/AdminDashboard";
 import UserDashboard from "./pages/UserDashboard";
-import LoginPage from "./pages/LoginPage";
 import PrivacyPolicy from "./components/PrivacyPolicy";
 import TermsConditions from "./components/TermsConditions";
 import RefundPolicy from "./components/RefundPolicy";
@@ -19,6 +18,7 @@ import ShippingPolicy from "./components/ShippingPolicy";
 import ContactUs from "./components/ContactUs";
 import SignupPage from "./pages/SignupPage";
 import LoginUserPage from "./pages/LogininUserPage";
+import PurchasedProjects from "./pages/PurchasedProjects";
 
 const queryClient = new QueryClient();
 
@@ -37,7 +37,7 @@ const App = () => (
               <Route path="/" element={<Index />} />
               <Route path="/project/:id" element={<ProjectDetail />} />
               <Route path="/contact" element={<Index />} />
-              <Route path="/purchased" element={<Index />} />
+              <Route path="/purchased" element={<PurchasedProjects />} />
               <Route path="/ss" element={<AdminDashboard />} />
               <Route path="/user" element={<UserDashboard />} />
               <Route path="/signup" element={<SignupPage />} />

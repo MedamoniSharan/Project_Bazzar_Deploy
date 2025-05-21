@@ -71,6 +71,12 @@ export default function ProjectDetail() {
     return project.images[index] || "/placeholder.svg";
   };
 
+  const extractDriveFileId = (url: string) => {
+    const match = url.match(/\/d\/([a-zA-Z0-9_-]+)\//);
+    return match ? match[1] : null;
+  };
+  
+
   const getYouTubeEmbedUrl = (url: string) => {
     const match = url.match(/(?:youtu\.be\/|youtube\.com\/(?:watch\?v=|embed\/))([\w-]{11})/);
     return match ? `https://www.youtube.com/embed/${match[1]}` : null;
@@ -130,13 +136,51 @@ export default function ProjectDetail() {
         name: "Project Palace",
         description: project.title,
         order_id: data.id,
-        handler: function (response: any) {
+        handler: async function (response: any) {
           toast({
             title: "Payment Successful 🎉",
             description: `Payment ID: ${response.razorpay_payment_id}`,
           });
+        
+          const storedUser = localStorage.getItem("user");
+          const user = storedUser ? JSON.parse(storedUser) : null;
+        
+          try {
+            const res = await fetch("http://localhost:3000/api/purchases/store", {
+              method: "POST",
+              headers: {
+                "Content-Type": "application/json",
+              },
+              body: JSON.stringify({
+                username: user?.username || "Customer",
+                email: user?.email || "customer@example.com",
+                projectId: project._id,
+                paymentId: response.razorpay_payment_id,
+              }),
+            });
+        
+            if (res.ok) {
+              toast({
+                title: "Project Added to Cart 🛒",
+                description: "You can now view it in your purchased projects section.",
+              });
+            } else {
+              toast({
+                title: "Storage Failed",
+                description: "Purchase recorded, but failed to update cart.",
+                variant: "destructive",
+              });
+            }
+          } catch (err) {
+            console.error("Failed to store purchase", err);
+          }
+        
           setTimeout(() => navigate("/"), 2000);
-        },
+        }
+        
+        
+        
+        ,
         prefill: {
           name: "Customer",
           email: "customer@example.com",
