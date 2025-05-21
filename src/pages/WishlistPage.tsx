@@ -5,7 +5,7 @@ import { ProjectCard } from "@/components/ProjectCard";
 import { useAuth } from "@/context/AuthContext";
 import Lottie from "lottie-react";
 import loadingAnimation from "./project-loader.json";
-import emptyAnimation from "./no_projectFound.json";
+import emptyAnimation from "./no_wishlist_animation.json";
 import { Project } from "@/pages";
 import axios from "axios";
 import { useNavigate } from "react-router-dom";
