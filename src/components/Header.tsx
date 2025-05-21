@@ -71,18 +71,6 @@ export function Header() {
                     className="z-50 min-w-[180px] bg-white shadow-lg rounded-md p-1 border text-sm"
                   >
                     <DropdownMenu.Item
-                      onClick={() => navigate("/profile")}
-                      className="flex items-center gap-2 px-3 py-2 hover:bg-gray-100 cursor-pointer"
-                    >
-                      <User className="h-4 w-4" /> Profile
-                    </DropdownMenu.Item>
-                    <DropdownMenu.Item
-                      onClick={() => navigate("/change-password")}
-                      className="flex items-center gap-2 px-3 py-2 hover:bg-gray-100 cursor-pointer"
-                    >
-                      <Lock className="h-4 w-4" /> Change Password
-                    </DropdownMenu.Item>
-                    <DropdownMenu.Item
                       onClick={() => navigate("/purchased")}
                       className="flex items-center gap-2 px-3 py-2 hover:bg-gray-100 cursor-pointer"
                     >
