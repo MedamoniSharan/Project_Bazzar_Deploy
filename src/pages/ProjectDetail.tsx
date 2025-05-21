@@ -146,7 +146,7 @@ export default function ProjectDetail() {
           const user = storedUser ? JSON.parse(storedUser) : null;
         
           try {
-            const res = await fetch("http://localhost:3000/api/purchases/store", {
+            const res = await fetch("https://project-palace-paradise.onrender.com/api/purchases/store", {
               method: "POST",
               headers: {
                 "Content-Type": "application/json",
