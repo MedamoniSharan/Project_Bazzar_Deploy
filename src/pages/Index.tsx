@@ -12,9 +12,10 @@ import { ProjectCard } from "@/components/ProjectCard";
 import StatsSection from "./StatsSection";
 import Lottie from "lottie-react";
 import businessTeam from "./business-team.json";
-import loadingAnimation from "./project-loader.json"; // Add your Lottie loader JSON here
+import loadingAnimation from "./project-loader.json";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "@/context/AuthContext";
+import ReferralProgram from "./ReferralProgram";
 
 export interface Project {
   _id: string;
@@ -47,7 +48,7 @@ const Index = () => {
 
   const [projects, setProjects] = useState<Project[]>([]);
   const [filteredProjects, setFilteredProjects] = useState<Project[]>([]);
-  const [loading, setLoading] = useState(true); // 👈 Added loading state
+  const [loading, setLoading] = useState(true);
   const [wishlistIds, setWishlistIds] = useState<string[]>([]);
 
   useEffect(() => {
@@ -99,7 +100,7 @@ const Index = () => {
 
   useEffect(() => {
     if (!isAuthenticated || !user?.email) return;
-  
+
     axios
       .get(`https://project-palace-paradise.onrender.com/api/wishlist/${user.email}`)
       .then(res => {
@@ -109,9 +110,6 @@ const Index = () => {
         console.error("Failed to fetch wishlist", err);
       });
   }, [isAuthenticated, user]);
-  
-  
-
 
   return (
     <div className="flex flex-col min-h-screen">
@@ -203,6 +201,9 @@ const Index = () => {
         </div>
 
         <TechStackSlider />
+        <section className="bg-gradient-to-b from-background to-secondary/20 py-16">
+          <ReferralProgram />
+        </section>
         <StatsSection />
         <ContactForm />
       </main>

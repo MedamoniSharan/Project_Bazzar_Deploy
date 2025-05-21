@@ -20,6 +20,7 @@ import SignupPage from "./pages/SignupPage";
 import LoginUserPage from "./pages/LogininUserPage";
 import PurchasedProjects from "./pages/PurchasedProjects";
 import WishlistPage from "./pages/WishlistPage";
+import ReferralProgram from "./pages/ReferralProgram";
 
 const queryClient = new QueryClient();
 
@@ -43,6 +44,7 @@ const App = () => (
               <Route path="/user" element={<UserDashboard />} />
               <Route path="/signup" element={<SignupPage />} />
               <Route path="/favourites" element={<WishlistPage />} />
+              <Route path="/referral" element={<ReferralProgram />} />
               <Route path="/loginuser" element={<LoginUserPage />} />
               <Route path="/privacy" element={<PrivacyPolicy />} />
               <Route path="/terms" element={<TermsConditions />} />
