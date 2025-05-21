@@ -113,6 +113,11 @@ export default function ProjectDetail() {
   };
 
   const handleBuyNow = async () => {
+    if (!isAuthenticated) {
+      navigate("/loginuser");
+      return;
+    }
+  
     if (!project) return;
 
     setIsPaying(true);

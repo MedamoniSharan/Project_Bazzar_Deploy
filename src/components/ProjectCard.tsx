@@ -1,11 +1,14 @@
-import { Link } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 import { Card, CardContent } from "@/components/ui/card";
 import { FileCode2, Tag } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
-import { Project } from "@/pages"; // Ensure this is the correct path to your Project type
+import { Project } from "@/pages"; // Update path if needed
+import { useAuth } from "@/context/AuthContext";
 
 export function ProjectCard({ project }: { project: Project }) {
-  // Use the first image if available, otherwise fallback to placeholder
+  const navigate = useNavigate();
+  const { isAuthenticated } = useAuth();
+
   const imageSrc = project.images?.[0] || "/placeholder.svg";
 
   const discountedPrice =
@@ -13,8 +16,19 @@ export function ProjectCard({ project }: { project: Project }) {
       ? project.price - (project.price * project.discountPercentage) / 100
       : null;
 
+  const handleCardClick = () => {
+    if (!isAuthenticated) {
+      navigate("/loginuser");
+    } else {
+      navigate(`/project/${project._id}`);
+    }
+  };
+
   return (
-    <Link to={`/project/${project._id}`}>
+    <div
+      onClick={handleCardClick}
+      className="cursor-pointer"
+    >
       <Card className="overflow-hidden h-full group hover:shadow-xl transition-all duration-300 bg-card">
         <div className="relative h-48">
           <img
@@ -72,6 +86,6 @@ export function ProjectCard({ project }: { project: Project }) {
           </div>
         </CardContent>
       </Card>
-    </Link>
+    </div>
   );
 }
