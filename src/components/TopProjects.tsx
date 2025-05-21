@@ -51,7 +51,7 @@ export function TopProjects() {
     if (!isAuthenticated) {
       navigate("/loginuser");
     } else {
-      navigate(`/projects/${projectId}`);
+      navigate(`/project/${projectId}`);
     }
   };
 
