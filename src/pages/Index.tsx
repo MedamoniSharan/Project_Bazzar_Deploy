@@ -149,15 +149,29 @@ const Index = () => {
                 <br />
                 Boost your launch and <span className="text-primary font-medium">save valuable time</span>.
               </p>
-
               <div className="flex justify-center md:justify-start gap-4 pt-4 animate-fade-in-up delay-300">
-                <button onClick={handleBrowseProjects} className="px-6 py-3 rounded-2xl font-semibold bg-primary text-white hover:bg-primary/90 transition flex items-center gap-2 shadow-lg">
-                  🚀 Get Started
-                </button>
-                <button onClick={handleBrowseProjects} className="px-6 py-3 rounded-2xl font-semibold border border-primary text-primary hover:bg-primary/10 transition flex items-center gap-2">
-                  📂 Browse Projects
-                </button>
-              </div>
+  <button
+    onClick={() => {
+      const section = document.getElementById("contact");
+      section?.scrollIntoView({ behavior: "smooth" });
+    }}
+    className="px-6 py-3 rounded-2xl font-semibold bg-primary text-white hover:bg-primary/90 transition flex items-center gap-2 shadow-lg"
+  >
+    🚀 Get Customize Project
+  </button>
+
+  <button
+    onClick={() => {
+      const section = document.getElementById("projects");
+      section?.scrollIntoView({ behavior: "smooth" });
+    }}
+    className="px-6 py-3 rounded-2xl font-semibold border border-primary text-primary hover:bg-primary/10 transition flex items-center gap-2"
+  >
+    📂 Browse Projects
+  </button>
+</div>
+
+
             </div>
 
             <div className="flex-1 flex justify-center items-center">
@@ -174,31 +188,33 @@ const Index = () => {
         <TopProjects />
 
         {/* Filter and Projects */}
-        <div className="container">
-          <ProjectFilter onFilterChange={handleFilterChange} />
+        <section id="projects">
+          <div className="container">
+            <ProjectFilter onFilterChange={handleFilterChange} />
 
-          <div className="mb-16">
-            <h2 className="text-2xl font-bold mb-6">Projects ({filteredProjects.length})</h2>
+            <div className="mb-16">
+              <h2 className="text-2xl font-bold mb-6">Projects ({filteredProjects.length})</h2>
 
-            {loading ? (
-              <div className="flex justify-center items-center py-20">
-                <Lottie animationData={loadingAnimation} loop className="w-40 h-40" />
-              </div>
-            ) : filteredProjects.length > 0 ? (
-              <div className="grid gap-6 grid-cols-1 md:grid-cols-2 lg:grid-cols-3">
-                {filteredProjects.map((project) => (
-                  <ProjectCard key={project._id} project={project} isFavourite={wishlistIds.includes(project._id)} />
-                ))}
-              </div>
-            ) : (
-              <div className="text-center py-12 bg-secondary/20 rounded-lg">
-                <p className="text-lg text-muted-foreground">
-                  No projects match your filters. Try adjusting your criteria.
-                </p>
-              </div>
-            )}
+              {loading ? (
+                <div className="flex justify-center items-center py-20">
+                  <Lottie animationData={loadingAnimation} loop className="w-40 h-40" />
+                </div>
+              ) : filteredProjects.length > 0 ? (
+                <div className="grid gap-6 grid-cols-1 md:grid-cols-2 lg:grid-cols-3">
+                  {filteredProjects.map((project) => (
+                    <ProjectCard key={project._id} project={project} isFavourite={wishlistIds.includes(project._id)} />
+                  ))}
+                </div>
+              ) : (
+                <div className="text-center py-12 bg-secondary/20 rounded-lg">
+                  <p className="text-lg text-muted-foreground">
+                    No projects match your filters. Try adjusting your criteria.
+                  </p>
+                </div>
+              )}
+            </div>
           </div>
-        </div>
+        </section>
 
         <TechStackSlider />
         <section className="bg-gradient-to-b from-background to-secondary/20 py-16">
