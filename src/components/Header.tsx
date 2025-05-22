@@ -49,6 +49,13 @@ export function Header() {
             >
               Purchased Projects
             </Link>
+            <Link
+                to="/contact"
+                className="py-2 transition-colors hover:text-primary"
+                onClick={() => setIsMenuOpen(false)}
+              >
+                Custom Projects
+              </Link>
           </nav>
 
           {/* Right-side Actions */}

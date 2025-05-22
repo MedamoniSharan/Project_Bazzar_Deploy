@@ -22,6 +22,7 @@ import PurchasedProjects from "./pages/PurchasedProjects";
 import WishlistPage from "./pages/WishlistPage";
 import ReferralProgram from "./pages/ReferralProgram";
 import ReferralDashboard from "./pages/ReferralDashboard";
+import CustomProjects from "./pages/CustomProjects";
 
 const queryClient = new QueryClient();
 
@@ -39,7 +40,7 @@ const App = () => (
             <Routes>
               <Route path="/" element={<Index />} />
               <Route path="/project/:id" element={<ProjectDetail />} />
-              <Route path="/contact" element={<Index />} />
+              <Route path="/contact" element={<CustomProjects />} /> 
               <Route path="/purchased" element={<PurchasedProjects />} />
               <Route path="/ss" element={<AdminDashboard />} />
               <Route path="/user" element={<UserDashboard />} />

@@ -5,9 +5,9 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { useToast } from "@/components/ui/use-toast";
-import { Loader2 } from "lucide-react"; // add this icon import at the top
-
-
+import { Loader2 } from "lucide-react";
+import Lottie from "lottie-react";
+import mailSuccessAnimation from "../pages/emial_animation.json"; // ✅ your downloaded animation
 
 export function ContactForm() {
   const { toast } = useToast();
@@ -17,6 +17,7 @@ export function ContactForm() {
     documents: [],
   });
   const [loading, setLoading] = useState(false);
+  const [mailSent, setMailSent] = useState(false);
 
   const [formData, setFormData] = useState({
     name: "",
@@ -52,44 +53,66 @@ export function ContactForm() {
     }));
   };
 
-  
-
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
-  
+
     const payload = new FormData();
     Object.entries(formData).forEach(([key, value]) => payload.append(key, value));
     files.images.forEach((file) => payload.append("images", file));
     files.documents.forEach((file) => payload.append("documents", file));
-  
+
     try {
       const response = await fetch("https://project-palace-paradise.onrender.com/send-email", {
         method: "POST",
         body: payload,
       });
-  
+
       const data = await response.json();
-  
+
       if (response.ok) {
-        toast({ title: "Success", description: data.message });
+        setMailSent(true);
         setFormData({ name: "", email: "", phone: "", projectName: "", description: "" });
         setFiles({ images: [], documents: [] });
       } else {
-        toast({ title: "Error", description: data.message });
+        toast({ title: "❌ Error", description: data.message });
       }
     } catch (error) {
-      toast({ title: "Error", description: "Failed to send email." });
+      toast({ title: "❌ Error", description: "Failed to send email." });
     } finally {
       setLoading(false);
     }
   };
-  
+
+  // ✅ Success view with animation
+  if (mailSent) {
+    return (
+      <section className="py-16 flex flex-col items-center justify-center text-center">
+        <Lottie animationData={mailSuccessAnimation} className="w-64 h-64" loop={false} />
+        <h2 className="text-3xl font-bold text-primary mt-4">Mail sent successfully!</h2>
+        <p className="text-muted-foreground mt-2">We will get back to you shortly.</p>
+        <Button onClick={() => setMailSent(false)} className="mt-6">
+          Send Another Request
+        </Button>
+      </section>
+    );
+  }
 
   return (
-    <section className="py-12" id="contact">
-      <div className="container">
-        <h2 className="text-3xl font-bold mb-8 text-center">Request a Custom Project</h2>
+    <section className="py-12 relative" id="contact">
+      {loading && (
+        <div className="absolute inset-0 bg-white/70 z-10 flex items-center justify-center">
+          <Loader2 className="h-10 w-10 text-primary animate-spin" />
+        </div>
+      )}
+
+      <div className="container relative z-0">
+        <h2 className="text-4xl font-extrabold text-center mb-2 bg-gradient-to-r from-primary to-purple-600 text-transparent bg-clip-text">
+          Request a Custom Project
+        </h2>
+        <p className="text-center text-muted-foreground mb-8 text-lg">
+          We’ll build what you envision — share your idea now.
+        </p>
 
         <Card className="max-w-3xl mx-auto">
           <CardHeader>
@@ -131,7 +154,6 @@ export function ContactForm() {
                 />
               </div>
 
-              {/* Image Upload */}
               <div className="space-y-2">
                 <Label htmlFor="images">Sample Images (Optional)</Label>
                 <Input
@@ -154,7 +176,7 @@ export function ContactForm() {
                         </div>
                         <button
                           type="button"
-                          className="absolute top-0 right-0 bg-destructive text-destructive-foreground rounded-full w-5 h-5 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity"
+                          className="absolute top-0 right-0 bg-destructive text-white rounded-full w-5 h-5 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity"
                           onClick={() => removeFile(index, "images")}
                         >
                           ×
@@ -165,7 +187,6 @@ export function ContactForm() {
                 )}
               </div>
 
-              {/* Document Upload */}
               <div className="space-y-2">
                 <Label htmlFor="documents">Documents (Optional)</Label>
                 <Input
@@ -193,18 +214,16 @@ export function ContactForm() {
                 )}
               </div>
 
-              {/* <Button type="submit" className="w-full">Submit Request</Button> */}
               <Button type="submit" className="w-full" disabled={loading}>
-  {loading ? (
-    <>
-      <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-      Sending...
-    </>
-  ) : (
-    "Submit Request"
-  )}
-</Button>
-
+                {loading ? (
+                  <>
+                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                    Sending...
+                  </>
+                ) : (
+                  "Submit Request"
+                )}
+              </Button>
             </form>
           </CardContent>
         </Card>
