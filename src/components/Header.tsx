@@ -11,9 +11,12 @@ import {
   Bell,
   Heart,
   LogOut,
+  Coins,
 } from "lucide-react";
 import { useAuth } from "@/context/AuthContext";
 import * as DropdownMenu from "@radix-ui/react-dropdown-menu";
+import Lottie from "lottie-react";
+import goldCoinsAnimation from "../pages/goldCoin_animation.json";
 
 export function Header() {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
@@ -88,6 +91,13 @@ export function Header() {
                       className="flex items-center gap-2 px-3 py-2 hover:bg-gray-100 cursor-pointer"
                     >
                       <Heart className="h-4 w-4" /> Favourites
+                    </DropdownMenu.Item>
+                    <DropdownMenu.Item
+                      onClick={() => navigate("/referral")}
+                      className="flex items-center gap-2 px-3 py-2 hover:bg-gray-100 cursor-pointer"
+                    >
+                      <Coins className="h-5 w-5 text-yellow-500" />
+                      Referral Program
                     </DropdownMenu.Item>
                     <DropdownMenu.Separator className="my-1 border-t" />
                     <DropdownMenu.Item
